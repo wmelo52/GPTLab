@@ -1,0 +1,16 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+Requisitos de memória.xlsx
+calcula_size_medio_sent.py
+teste_json.py
+teste_multinomial_dist
+videos/
+data/init*
+word_cluster_plot_video.py
+training_nanoGPT_GPU_video.py
+transformer_sizing.py
+TransformerMemoryCalculation.py
+checkpoints/**
+images/*.png
