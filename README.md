@@ -35,8 +35,7 @@ Uma vantagem de utilizar este tipo de tokenizador é que o número de parâmetro
 
 ```wte = nn.Embedding(config.vocab_size, config.n_embd)```
 
-Quando utilizamos o treinamento em GPU o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 384 o que dá 115x384 = 44160. O número total de parâmetros deste modelo é 10.683.264, então a camada de embeddings tomaria 0,41% deste total. Se utilizássemos o tokenizador do GPT-2 que usa o algorítmico [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo em 50257x384 = 19.298.688 e a camada embeddings tomaria 64,46% do tamanho do modelo.
-Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para diminuirmos o consumo de memória e o tempo de processamento, mas podemos perder a semântica no nível da palavra e aumentar o comprimento da sequência.
+Quando utilizamos o treinamento em GPU o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 384 o que dá 115x384 = 44160. O número total de parâmetros deste modelo é 10.683.264, então a camada de embeddings tomaria 0,41% deste total. Se utilizássemos o tokenizador do GPT-2 que usa o algorítmico [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo em 50257x384 = 19.298.688 e a camada embeddings tomaria 64,46% do tamanho do modelo. Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para diminuirmos o consumo de memória e o tempo de processamento.
 
 Mas a nossa missão é permitir o treinamento deste modelo para a maioria dos usuário que tem o computador comum , sem uma poderosa GPU que custa muito dinheiro.
 
@@ -45,16 +44,17 @@ Mas a nossa missão é permitir o treinamento deste modelo para a maioria dos us
 
 Dependencies:
 
-- [pytorch](https://pytorch.org) <3
-- [numpy](https://numpy.org/install/) <3
-- sklearn
-- gensim
+- python > 3.9
+- [pytorch](https://pytorch.org) > 2.0
+- sklearn==1.2.2
+- gensim==4.3.1
 
 
 &nbsp;  
 ## Eu tenho uma GPU
 
 Para treinamento em GPU com pouca memória (4GB) os  hiperparâmetros são ajustados para:
+```
 n_embd = 384
 n_head = 6
 n_layer = 6
@@ -63,7 +63,7 @@ batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
 block_size = 64 # Qual é o comprimento máximo de contexto para previsões?
 O script “training_nanoGPT_GPU.py” 
 E utilizar o arquivo obras_machado_de_assis_conto.txt como corpus de treinamento
-
+```
 
 
 Isso gera algumas amostras, por exemplo:
@@ -83,7 +83,7 @@ a exputo do marido?
 que perdia dela nentrara, olhava com a rua sagradadeira, enfim, aprovantando tacrefundo a
 fechação e dos novos. Nã
 ```
-Nada mal para um modelo de nível de personagem após 8 minutos de treinamento em uma GPU. 
+Nada mal para um modelo de nível de personagem após 30 minutos de treinamento em uma GPU. 
 
 &nbsp;  
 ## Eu só tenho um PC comum
@@ -93,7 +93,7 @@ Nada mal para um modelo de nível de personagem após 8 minutos de treinamento e
 Para treinamento em CPU recomendo o uso do arquivo “train_nanoGPT_cpu.py” em que os  hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar tanto o arquivo shakespeare.txt como corpus de treinamento ou o arquivo machado_de_assis_conto.txt.
 
 Nosso tamanho de contexto é de apenas 64 caracteres em vez de 256 e o tamanho do lote apenas 32 exemplos por iteração, não 64 Também usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embeddings de 64) e diminuiremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (`--dropout=0.0`). Isso ainda é executado em cerca de 14 minutos, mas nos dá uma perda de apenas 2,02 e, portanto, também amostras piores, mas ainda é uma boa diversão:
-
+```
 batch_size = 32
 n_embd = 64
 n_head = 4
@@ -101,6 +101,7 @@ n_layer = 4
 dropout = 0.0
 batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
 block_size = 32 # Qual é o comprimento máximo de contexto para previsões?
+```
 
 ```
 Maltia avas, cão respípas dais,
@@ -128,6 +129,8 @@ Para superar esse desafio, o t-SNE pode ser aplicado para reduzir a dimensionali
 O arquivo `word_cluster_plot.py` gera duas imagens
 - Token embeddings
 - Posicional embeddings
+&nbsp;  &nbsp;  
+
 Para o treinamento em GPU que utilizou hiperparâmetros da arquitetura do modelo maiores e obteve uma função perda de 1,44 os resultados abaixo mostram que para o gráfico de posicional embeddings formou-se um padrão nos embeddings variando de 0 a 63 (máximo comprimento da sentença = 64).
 Para o gráfico de token embeddings observa-se que houve o agrupamento de tokens(caracteres) que são próximos quando o modelo foi treinado. As vogais minúsculas estão próximas assim como as consoantes minúsculas que por sua vez estão próximas do grupo das vogais minúsculas. Isso era de se esperar porque as sílabas mais comuns são formadas pelas estas consoantes e estas vogais, ex: pa,ma,ma etc...
 Observa-se também que as vogais maiúscula estão próximas assim como as consoantes maiúscula bem como os sinais de pontuação. Os números estão próximos também.
@@ -155,6 +158,7 @@ Aumentei o número de iteração para 10.000, demorou agora 29 minutos e a perda
   <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_10000.png" width="500" height="300">
 </div>
 <br/><br/>
+
 ## Solução de problemas
 
 Observe que, por padrão, este repositório usa PyTorch 2.0 (ou seja, `torch.compile`). Isso é bastante novo e experimental e ainda não está disponível em todas as plataformas (por exemplo, Windows). Se você estiver encontrando mensagens de erro relacionadas, tente não usar este recurso . Isso diminuirá a velocidade do código, mas pelo menos ele será executado.
@@ -166,19 +170,22 @@ Observe que, por padrão, este repositório usa PyTorch 2.0 (ou seja, `torch.com
 No posicional embedding as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site clideo.com(https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
 Rodando o vídeo observa-se que no início as posições "12","13","14" estavam distantes umas das outras. A medida que a perda de validação vai diminuindo estas distâncias relativas entre as posições "12","13","14 também vai diminuindo mostrando que a matriz embeddings posicional vai aprendendo.
 
-<figure class="video_container">
+<!-- <figure class="video_container">
   <video width="500px" height="300px" controls="true" allowfullscreen="false" poster="assets/machado_de_assis_conto_pos_emb_5000.png">
     <source src="assets/init-pos-emb-384.mp4" type="video/mp4">
   </video>
-</figure>  
+</figure>  -->
+<video src='assets/init-pos-emb-384.mp4' width=500 height=300/> |
 <br/>
+&nbsp;  
+
 Para o token embeddings foram marcados dois grupos: vogais ("a","e","i","o","u") em vermelhos e números("0","1","2","3","4","5","6","7","8","9") em azul e também observa-se que estes grupos de tokens convergem para um cluster de tokens.
-<figure class="video_container">
+<!-- <figure class="video_container">
   <video width="500px" height="300px" controls="true" allowfullscreen="false" poster="assets/machado_de_assis_conto_tok_emb_5000.png">
     <source src="assets/init-tok-emb-384.mp4" type="video/mp4">
   </video>
-</figure>
-
+</figure> -->
+<video src='assets/init-tok-emb-384.mp4' width=500 height=300/>
 <br/><br/>
 
 ## Referências

@@ -14,3 +14,4 @@ transformer_sizing.py
 TransformerMemoryCalculation.py
 checkpoints/**
 images/*.png
+pacotes.txt
