@@ -167,7 +167,7 @@ Aumentei o número de iteração para 10.000, demorou agora 29 minutos e a perda
 No posicional embedding as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site clideo.com(https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
 Rodando o vídeo observa-se que no início as posições "12","13","14" estavam distantes umas das outras. A medida que a perda de validação vai diminuindo estas distâncias relativas entre as posições "12","13","14 também vai diminuindo mostrando que a matriz embeddings posicional vai aprendendo.
 
-[vídeo1](https://github.com/wmelo52/GPTLab/assets/init-pos-emb-384.mp4)
+[video1](https://github.com/wmelo52/GPTLab/assets/61335830/1f34f2c8-d4cf-43e4-a876-4d18fe1c2bb3)
 <br/>
 &nbsp;  
 
