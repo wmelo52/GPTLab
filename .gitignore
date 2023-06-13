@@ -12,6 +12,7 @@ word_cluster_plot_video.py
 training_nanoGPT_GPU_video.py
 transformer_sizing.py
 TransformerMemoryCalculation.py
+objective_function.py
 checkpoints/**
 images/*.png
 pacotes.txt
