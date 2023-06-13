@@ -166,6 +166,7 @@ Aumentei o número de iteração para 10.000, demorou agora 29 minutos e a perda
 50 imagens foram geradas no treinamento do modelo nanoGPT. A cada 100 step duas imagens eram geradas reduzindo a dimensionalidade de 384 para 2 utilizando o algoritmo TNSE.
 No posicional embeddings as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site clideo.com(https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
 Rodando o vídeo observa-se que no início as posições "12","13","14" estavam distantes umas das outras. A medida que a perda de validação vai diminuindo estas distâncias relativas entre as posições "12","13","14 também vai diminuindo mostrando que a matriz embeddings posicional vai aprendendo.
+<br/><br/>
 
 [vídeo posicional embeddings](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb)
 <br/>
