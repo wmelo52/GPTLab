@@ -103,7 +103,7 @@ batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
 block_size = 32 # Qual é o comprimento máximo de contexto para previsões?
 ```
 
-Isso gera algumas amostras, mas de uqalidade inferior do gerado acima com GPU, por exemplo:
+Isso gera algumas amostras, mas de qualidade inferior do gerado acima com GPU:
 
 ```
 Maltia avas, cão respípas dais,
