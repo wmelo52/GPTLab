@@ -164,16 +164,17 @@ Aumentei o número de iteração para 10.000, demorou agora 29 minutos e a perda
 ## Experimento 2
 <br/>
 50 imagens foram geradas no treinamento do modelo nanoGPT. A cada 100 step duas imagens eram geradas reduzindo a dimensionalidade de 384 para 2 utilizando o algoritmo TNSE.
-No posicional embedding as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site clideo.com(https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
+No posicional embeddings as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site clideo.com(https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
 Rodando o vídeo observa-se que no início as posições "12","13","14" estavam distantes umas das outras. A medida que a perda de validação vai diminuindo estas distâncias relativas entre as posições "12","13","14 também vai diminuindo mostrando que a matriz embeddings posicional vai aprendendo.
 
-[video1](https://github.com/wmelo52/GPTLab/assets/61335830/1f34f2c8-d4cf-43e4-a876-4d18fe1c2bb3)
+[vídeo posicional embeddings](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb)
 <br/>
 &nbsp;  
 
 Para o token embeddings foram marcados dois grupos: vogais ("a","e","i","o","u") em vermelhos e números("0","1","2","3","4","5","6","7","8","9") em azul e também observa-se que estes grupos de tokens convergem para um cluster de tokens.
 <br/><br/>
-https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb
+
+[vídeo token embeddings](https://github.com/wmelo52/GPTLab/assets/61335830/1f34f2c8-d4cf-43e4-a876-4d18fe1c2bb3)
 
 ## Solução de problemas
 
