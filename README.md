@@ -14,7 +14,8 @@ Os modelos de linguagem baseados em inteligência artificial têm desempenhado u
 
 
 O nanoGPT é baseado no modelo GPT, que é um modelo de linguagem baseado em inteligência artificial que foi treinado em grandes quantidades de dados textuais para aprender a prever a próxima palavra em uma sequência de palavras. Ele é baseado na arquitetura [Transformer](https://arxiv.org/abs/1706.03762), mas utiliza apenas o decoder e remove as partes relacionadas ao encoder (ver figura abaixo).
-&nbsp;
+&nbsp;  
+&nbsp;  
 
 ![nanoGPT](assets/decoder.jpg)
 &nbsp;  
@@ -23,9 +24,31 @@ O nanoGPT pega a arquitetura do Transformer e a estende usando aprendizado não 
 &nbsp;  
 <br/>
 
-![nanoGPT](assets/nanoGPT_model.png)
+![nanoGPT](assets/nanoGPT_model.jpg)
    
 &nbsp;  
+O GPT-2 foi treinado com um objetivo de modelagem de linguagem causal (CLM) e, portanto, é poderoso para prever o próximo token em uma sequência.&nbsp;  
+
+Dado a seguinte sentença: "A figura é poética, mas ", a função objetiva para o pré-treinamento do modelo nanoGPT segue este padrão: &nbsp;  
+
+quando a entrada é **token(caracter)** o alvo é: **token(caracter )**
+```
+quando a entrada é [26](A) o alvo é: 1( )
+quando a entrada é [26, 1](A ) o alvo é: 57(f)
+quando a entrada é [26, 1, 57](A f) o alvo é: 60(i)
+quando a entrada é [26, 1, 57, 60](A fi) o alvo é: 58(g)
+quando a entrada é [26, 1, 57, 60, 58](A fig) o alvo é: 72(u)
+quando a entrada é [26, 1, 57, 60, 58, 72](A figu) o alvo é: 69(r)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69](A figur) o alvo é: 52(a)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52](A figura) o alvo é: 1( )
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1](A figura ) o alvo é: 101(é)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101](A figura é) o alvo é: 1( )
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1](A figura é ) o alvo é: 67(p)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67](A figura é p) o alvo é: 66(o)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura é po) o alvo é: 101(é)
+```
+&nbsp;  
+
 ## Tokenizer
 Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
 
@@ -184,6 +207,10 @@ Observe que, por padrão, este repositório usa PyTorch 2.0 (ou seja, `torch.com
 &nbsp;  
 
 ## Referências
+[“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
+
+[GitHub](https://github.com/karpathy/nanoGPT)
+
 [Building a GPT-like Model from Scratch with Detailed Theory](https://habr.com/en/companies/ods/articles/708672/)
 
 [The Illustrated Transformer, Jay Alammar](https://jalammar.github.io/illustrated-transformer/)
