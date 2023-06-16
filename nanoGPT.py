@@ -41,6 +41,7 @@ def new_gelu(x):
      Implementação da função de ativação GELU atualmente no repositório Google BERT (idêntico ao OpenAI GPT).
      Referência: papel Gaussian Error Linear Units (GELU): https://arxiv.org/abs/1606.08415
     """
+    # gelu(x) = 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
     return 0.5 * x * (1.0 + torch.tanh(math.sqrt(2.0 / math.pi) * (x + 0.044715 * torch.pow(x, 3.0))))
 
 
@@ -80,8 +81,7 @@ class MultiHeadedAttention(nn.Module):
         super().__init__()
         assert config.n_embd % config.n_head == 0
         self.d_k = config.n_embd // config.n_head
-        # key, query, value projections for all n_head, but in a batch
-        #self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
+        # key, query, value projections for all n_head, but in a batch        
         self.q_linear = nn.Linear(config.n_embd, config.n_embd)
         self.v_linear = nn.Linear(config.n_embd, config.n_embd)
         self.k_linear = nn.Linear(config.n_embd, config.n_embd)
@@ -94,7 +94,7 @@ class MultiHeadedAttention(nn.Module):
         self.n_embd = config.n_embd
         self.dropout = config.dropout
         self.layer_idx = layer_idx
-        # flash attention make GPU go brrrrr but support is only in PyTorch nightly and still a bit scary
+        # Flash Attention: verificar se versão do PyTorch tem suporte
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention') and self.dropout == 0.0
         if not self.flash:
             print("WARNING: using slow attention. Flash Attention atm needs PyTorch nightly and dropout=0.0")
@@ -107,20 +107,14 @@ class MultiHeadedAttention(nn.Module):
     def forward(self, x, mask=None):
         B, T, C = x.size() # B:tamanho do batch, T:comprimento da sequência, C:dimensionalidade do embedding (n_embd)
 
-        # # calculate query, key, values for all n_head in batch and move head forward to be the batch dim
-        # q, k ,v  = self.c_attn(x).split(self.n_embd, dim=2)
-        # k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        # q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        # v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        
-        # perform linear operation and split into N n_head
+        # executar operação linear e dividir em N n_head
         k = self.k_linear(x).view(B, -1, self.n_head, self.d_k).transpose(1, 2) # (B, nh, T, hs)
         q = self.q_linear(x).view(B, -1, self.n_head, self.d_k).transpose(1, 2) # (B, nh, T, hs)
         v = self.v_linear(x).view(B, -1, self.n_head, self.d_k).transpose(1, 2) # (B, nh, T, hs)        
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         if self.flash:
-            # efficient attention using Flash Attention CUDA kernels
+            # atenção eficiente usando Flash Attention CUDA kernels
             z = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=self.dropout, is_causal=True)
         else:
             # implementação manual do mecanismo de atenção
@@ -259,19 +253,19 @@ class nanoGPTModel(nn.Module):
 
     def save_pretrained(self, save_directory, vocab):
         if os.path.isfile(save_directory):
-            print(f"Provided path ({save_directory}) should be a directory, not a file")
+            print(f"O caminho fornecido ({save_directory}) deve ser um diretório, não um arquivo")
             return
         
         os.makedirs(save_directory, exist_ok=True)
         
-        print(f"saving checkpoint to {save_directory}")
+        print(f"salvando checkpoint para {save_directory}")
         ckpt_path = os.path.join(save_directory, 'pytorch_model.bin')
         
         try:
             torch.save(self.state_dict(), ckpt_path)
-            print("Successfully saved the model to {}".format(ckpt_path))
+            print("Salvou com sucesso o modelo para{}".format(ckpt_path))
         except Exception as e:
-            print(f"Error saving the model to checkpoint. {e}")
+            print(f"Erro ao salvar o modelo no checkpoint. {e}")
         
         with open(f"{save_directory}/config.json", "w", encoding='utf-8') as jsonFile:
             jsonFile.write(self.config.json) 
