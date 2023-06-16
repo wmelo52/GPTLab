@@ -10,10 +10,10 @@ Se você não é um profissional de aprendizado profundo e quer apenas compreend
 &nbsp;  
 &nbsp;  
 ## Índice
-1. [Modelo GPT](#Modelo-GPT)
-2. [Explicando o modelo nanoGPT](#Explicando-o-modelo-nanoGPT)
-3. [Tokenizer](#Tokenizer)
-4. [Instalação](#Instalação)
+1. [Instalação](#Instalação)
+2. [Tokenizer](#Tokenizer)
+3. [Modelo GPT](#Modelo-GPT)
+4. [Explicando o modelo nanoGPT](#Explicando-o-modelo-nanoGPT)
 5. [Eu tenho uma GPU](#Eu-tenho-uma-GPU)
 6. [Eu só tenho um PC comum](#Eu-só-tenho-um-PC-comum)
 7. [Experimento 1](#Experimento-1)
@@ -23,6 +23,31 @@ Se você não é um profissional de aprendizado profundo e quer apenas compreend
 11. [Reconhecimentos](#Reconhecimentos)
 
 &nbsp;  
+
+## Tokenizer
+Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
+
+Um tokenizador de nível de caractere divide o texto em caracteres individuais e representa cada caractere como um token separado. Ele oferece uma representação refinada do texto e pode lidar com palavras raras ou não vistas de forma eficaz, mas pode perder a semântica no nível da palavra e aumentar o comprimento da sequência.
+
+Uma vantagem de utilizar este tipo de tokenizador é que o número de parâmetros da matriz embeddings é menor. 
+
+```wte = nn.Embedding(config.vocab_size, config.n_embd)```
+
+Quando utilizamos o treinamento em GPU o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 384 o que dá 115x384 = 44160. O número total de parâmetros deste modelo é 10.683.264, então a camada de embeddings tomaria 0,41% deste total. Se utilizássemos o tokenizador do GPT-2 que usa o algorítmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo em 50257x384 = 19.298.688 e a camada embeddings tomaria 64,46% do tamanho do modelo. Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para diminuirmos o consumo de memória e o tempo de processamento.
+
+Mas o nosso objetivo é permitir o treinamento deste modelo para a maioria dos usuário que tem um computador comum, sem uma poderosa GPU que custa muito dinheiro.
+
+&nbsp;  
+## Instalação
+
+Dependências:
+
+- python > 3.9
+- [pytorch](https://pytorch.org) > 2.0
+- sklearn==1.2.2
+- gensim==4.3.1
+<br/><br/><br/>
+
 ## Modelo GPT
 Os modelos de linguagem baseados em inteligência artificial têm desempenhado um papel cada vez mais importante na geração de  texto coerente e relevante com base em um contexto fornecido. Um desses modelos notáveis é o GPT (Generative Pre-trained Transformer), desenvolvido pela OpenAI. Neste projeto, exploramos o potencial do nanoGPT como uma ferramenta de auxílio para o entendimento da arquitetura dos Modelos de Linguagem de Grande Escala(LLM). O nanoGPT, uma versão compacta e acessível do GPT criada por Andrej Karpathy e disponível no repositório do [GitHub](https://github.com/karpathy/nanoGPT). 
 
@@ -232,7 +257,8 @@ A aplicação das transformações não lineares nas camadas lineares consecutiv
 
 A camada Feed Forward no decodificador do modelo GPT é essencial para aprimorar a capacidade de aprendizado e a expressividade do modelo, permitindo que ele capture relações mais complexas e melhore a qualidade das previsões de sequência geradas pelo decodificador.
 
-<br/><br/>
+<br/><br/>  
+
 **Linear Head e Softmax**<br/>
 Por fim, criamos uma camada linear com comprimento igual ao número de palavras no corpus alvo total e uma função softmax com ela para obter a probabilidade de cada palavra.
 
@@ -247,7 +273,8 @@ O resultado dessa operação é uma pontuação (ou logits) para cada palavra do
 A camada softmax, que segue a camada Linear Head, é responsável por transformar as pontuações (scores) em uma distribuição de probabilidade normalizada. A função softmax calcula a exponencial das pontuações e normaliza os valores resultantes pela soma de todas as exponenciais, atribuindo probabilidades a cada palavra do vocabulário.
 Em resumo, a camada Linear Head no decodificador do modelo GPT realiza a projeção linear das representações finais para pontuações associadas a cada palavra do vocabulário. Essas pontuações são então passadas pela camada softmax para obter uma distribuição de probabilidade sobre o vocabulário, permitindo a geração da próxima palavra na sequência.
 <br/><br/>
-<br/>
+<br/>  
+
 **Generate**<br/>
 Por fim,  O código Python abaixo realiza uma amostragem multinomial usando a biblioteca PyTorch. Vamos analisá-lo em detalhes:
 ```
@@ -262,33 +289,9 @@ O resultado dessa chamada de função é atribuído à variável idx_next. A var
 
 Em resumo, o código realiza a amostragem multinomial a partir de um tensor de probabilidades probs usando a função torch.multinomial. O resultado é um índice correspondente à palavra amostrada, que é armazenado na variável idx_next.
 
-&nbsp;  
-&nbsp; 
-
-## Tokenizer
-Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
-
-Um tokenizador de nível de caractere divide o texto em caracteres individuais e representa cada caractere como um token separado. Ele oferece uma representação refinada do texto e pode lidar com palavras raras ou não vistas de forma eficaz, mas pode perder a semântica no nível da palavra e aumentar o comprimento da sequência.
-
-Uma vantagem de utilizar este tipo de tokenizador é que o número de parâmetros da matriz embeddings é menor. 
-
-```wte = nn.Embedding(config.vocab_size, config.n_embd)```
-
-Quando utilizamos o treinamento em GPU o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 384 o que dá 115x384 = 44160. O número total de parâmetros deste modelo é 10.683.264, então a camada de embeddings tomaria 0,41% deste total. Se utilizássemos o tokenizador do GPT-2 que usa o algorítmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo em 50257x384 = 19.298.688 e a camada embeddings tomaria 64,46% do tamanho do modelo. Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para diminuirmos o consumo de memória e o tempo de processamento.
-
-Mas a nossa missão é permitir o treinamento deste modelo para a maioria dos usuário que tem o computador comum , sem uma poderosa GPU que custa muito dinheiro.
+O arquivo `teste_multinomial_dist.py` dá uma boa intuição de como esta amostragem de uma distribuição multinomial funciona.
 
 &nbsp;  
-## Instalação
-
-Dependencies:
-
-- python > 3.9
-- [pytorch](https://pytorch.org) > 2.0
-- sklearn==1.2.2
-- gensim==4.3.1
-
-
 &nbsp;  
 
 ## Eu tenho uma GPU
@@ -332,7 +335,7 @@ Nada mal para um modelo de nível de personagem após 30 minutos de treinamento 
 
 Para treinamento em CPU recomendo o uso do arquivo “train_nanoGPT_cpu.py” em que os  hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar tanto o arquivo shakespeare.txt como corpus de treinamento ou o arquivo machado_de_assis_conto.txt.
 
-Nosso tamanho de contexto é de apenas 64 caracteres em vez de 256 e o tamanho do lote apenas 32 exemplos por iteração, não 64 Também usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embeddings de 64) e diminuiremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (`--dropout=0.0`). Isso ainda é executado em cerca de 14 minutos, mas nos dá uma perda de apenas 2,02 e, portanto, também amostras piores, mas ainda é uma boa diversão:
+Nosso tamanho de contexto é de apenas 64 caracteres em vez de 256 e o tamanho do lote apenas 32 exemplos por iteração, não 64. Também usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embeddings de 64) e diminuiremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (`--dropout=0.0`). Isso ainda é executado em cerca de 14 minutos, mas nos dá uma perda de apenas 2,02 e, portanto, também amostras piores, mas ainda é uma boa diversão:
 ```
 batch_size = 32
 n_embd = 64
@@ -420,11 +423,15 @@ Aumentei o número de iterações para 10.000, demorou agora 29 minutos e a perd
 <br/>
 50 imagens foram geradas no treinamento do modelo nanoGPT. A cada 100 step duas imagens eram geradas reduzindo a dimensionalidade de 384 para 2 utilizando o algoritmo TNSE.
 No embeddings posicional as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site clideo.com(https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
-Rodando o vídeo observa-se que no início as posições "12","13","14" estavam distantes umas das outras. À medida que a perda de validação vai diminuindo estas distâncias relativas entre as posições "12","13","14 também vão diminuindo mostrando que a matriz embeddings posicional vai aprendendo.
+Rodando o vídeo observa-se que no início as posições "12","13","14" estavam distantes umas das outras. À medida que a perda de validação vai diminuindo (VER FIGURA ABAIXO) estas distâncias relativas entre as posições "12","13","14 também vão diminuindo mostrando que a matriz embeddings posicional vai aprendendo.
+<br/><br/>
+<div align="left">
+  <img alt="text" src="assets/val_loss_machado_de_assis_conto.png" width="500" height="300">
+</div>
 <br/><br/>
 
 [vídeo embeddings posicional](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb)
-<br/>
+<br/><br/>
 &nbsp;  
 
 Para o token embeddings foram marcados dois grupos: vogais ("a","e","i","o","u") em vermelhos e números("0","1","2","3","4","5","6","7","8","9") em azul e também observa-se que estes grupos de tokens convergem para um cluster de tokens.
@@ -432,12 +439,13 @@ Para o token embeddings foram marcados dois grupos: vogais ("a","e","i","o","u")
 
 [vídeo token embeddings](https://github.com/wmelo52/GPTLab/assets/61335830/1f34f2c8-d4cf-43e4-a876-4d18fe1c2bb3)
 
+<br/><br/>
 ## Solução de problemas
 
 Observe que, por padrão, este repositório usa PyTorch 2.0 (ou seja, `torch.compile`). Isso é bastante novo e experimental e ainda não está disponível em todas as plataformas (por exemplo, Windows). Se você estiver encontrando mensagens de erro relacionadas, tente não usar este recurso . Isso diminuirá a velocidade do código, mas pelo menos ele será executado.
 <br/>
 &nbsp;  
-
+<br/>
 ## Referências
 [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
 
