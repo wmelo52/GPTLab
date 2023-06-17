@@ -273,7 +273,17 @@ class nanoGPTModel(nn.Module):
         with open(f"{save_directory}/vocab.txt", "w", encoding='utf-8') as f:
             f.write(''.join(vocab)) 
             
-            
+    
+    def count_parameters(self):
+        total_params = 0
+        for name, param in self.named_parameters():
+            if param.requires_grad:
+                num_params = param.numel()
+                print(f"{name}: {num_params}")
+                total_params += num_params
+        print(f"Total Trainable Parameters: {total_params}")
+        
+        
     @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
         """
