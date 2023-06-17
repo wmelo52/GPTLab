@@ -13,6 +13,7 @@ training_nanoGPT_GPU_video.py
 transformer_sizing.py
 TransformerMemoryCalculation.py
 objective_function.py
+calculates_average_sentence_length.py
 checkpoints/**
 images/*.png
 pacotes.txt
