@@ -13,14 +13,15 @@ Se você não é um profissional de aprendizado profundo e quer apenas compreend
 2. [Tokenizer](#Tokenizer)
 3. [Modelo GPT](#Modelo-GPT)
 4. [Explicando o modelo nanoGPT](#Explicando-o-modelo-nanoGPT)
-5. [Eu tenho uma GPU](#Eu-tenho-uma-GPU)
-6. [Eu só tenho um PC comum](#Eu-só-tenho-um-PC-comum)
-7. [Experimento 1](#Experimento-1)
-8. [Experimento 2](#Experimento-2)
-9. [Experimento 3](#Experimento-3)
-10. [Solução de problemas](#Solução-de-problemas)
-11. [Referências](#Referências)
-12. [Reconhecimentos](#Reconhecimentos)
+5. [Função objetivo no pré-treinamento](#Função-objetivo-no-pré-treinamento)
+6. [Eu tenho uma GPU](#Eu-tenho-uma-GPU)
+7. [Eu só tenho um PC comum](#Eu-só-tenho-um-PC-comum)
+8. [Experimento 1](#Experimento-1)
+9. [Experimento 2](#Experimento-2)
+10. [Experimento 3](#Experimento-3)
+11. [Solução de problemas](#Solução-de-problemas)
+12. [Referências](#Referências)
+13. [Reconhecimentos](#Reconhecimentos)
 
 &nbsp;  
 
@@ -60,18 +61,19 @@ Os modelos de linguagem baseados em inteligência artificial têm desempenhado u
 Neste projeto, exploramos o potencial do nanoGPT como uma ferramenta de auxílio para o entendimento da arquitetura dos Modelos de Linguagem de Grande Escala (LLM). O nanoGPT, uma versão compacta e acessível do GPT criada por Andrej Karpathy e disponível no repositório do [GitHub](https://github.com/karpathy/nanoGPT). 
 
 
-O nanoGPT é baseado no modelo GPT, que é um modelo de linguagem baseado em inteligência artificial que foi treinado em grandes quantidades de dados textuais para aprender a prever a próxima palavra em uma sequência de palavras. Ele é baseado na arquitetura [Transformer](https://arxiv.org/abs/1706.03762), mas utiliza apenas o decoder e remove as partes relacionadas ao encoder (ver figura abaixo).
+O **nanoGPT** é baseado no modelo GPT, que é um modelo de linguagem baseado em inteligência artificial que foi treinado em grandes quantidades de dados textuais para aprender a prever a próxima palavra em uma sequência de palavras. Ele é baseado na arquitetura [Transformer](https://arxiv.org/abs/1706.03762), mas utiliza apenas o decoder e remove as partes relacionadas ao encoder (ver figura abaixo).
 &nbsp;  
 &nbsp;  
 
 ![nanoGPT](assets/decoder.jpg)
 &nbsp;  
 &nbsp;  
-O nanoGPT se baseia na arquitetura do Transformer e a estende usando aprendizado não supervisionado em uma quantidade de dados de texto. Este processo é conhecido como pré-treinamento. Durante o pré-treinamento, o nanoGPT é exposto a um corpus de texto, como os contos de Machado de Assis ou a uma parte da obra de Shakespeare, e aprende a prever o próximo caractere em um determinado contexto. Ao fazer isso, o modelo aprende os padrões estatísticos e as estruturas sintáticas da linguagem humana.
+O **nanoGPT** se baseia na arquitetura do Transformer e a estende usando aprendizado não supervisionado em uma quantidade de dados de texto. Este processo é conhecido como pré-treinamento. Durante o pré-treinamento, o nanoGPT é exposto a um corpus de texto, como os contos de Machado de Assis ou a uma parte da obra de Shakespeare, e aprende a prever o próximo caractere em um determinado contexto. Ao fazer isso, o modelo aprende os padrões estatísticos e as estruturas sintáticas da linguagem humana.
 &nbsp;  
 <br/>
-Abaixo uma figura que descreve a arquitetura do modelo nanoGPT detalhadamente. Note que na saída de cada módulo tem a informação das dimensões dos tensores. Você poderá utilizar este arquivo [GPT_model.pptx](https://github.com/wmelo52/GPTLab/blob/master/GPT_model.pptx) para acompanhar a explicação deste modelo logo mais abaixo.
-<br/>
+Abaixo uma figura que descreve a arquitetura do modelo **nanoGPT** detalhadamente. Note que na saída de cada módulo tem a informação das dimensões dos tensores. Você poderá utilizar este arquivo [GPT_model.pptx](https://github.com/wmelo52/GPTLab/blob/master/GPT_model.pptx) para acompanhar a explicação deste modelo logo mais abaixo.
+<br/><br/>
+
 
 ![nanoGPT](assets/nanoGPT_model.jpg)
    
@@ -106,8 +108,38 @@ nanoGPTModel(
 )
 ```
 &nbsp;  
-O GPT-2 foi treinado com um objetivo de modelagem de linguagem causal (CLM) e, portanto, é poderoso para prever o próximo token em uma sequência.
+<br/> <br/>
+## Função objetivo no pré-treinamento
+
 &nbsp;  
+A função objetivo no pré-treinamento do modelo **nanoGPT** tem como objetivo principal treinar o modelo para aprender a capturar e modelar padrões em textos de treinamento de maneira não supervisionada.    
+O pré-treinamento do nanoGPT é realizado utilizando uma tarefa chamada de "previsão da palavra seguinte" (next-word prediction).
+
+A função objetivo no pré-treinamento é definida da seguinte maneira: dado um contexto de tokens anteriores, o modelo é treinado para prever qual é o próximo token no texto original. Essa previsão é comparada com o token real que aparece no texto e a diferença entre a previsão e o token real é usada para calcular uma medida de perda, como a entropia cruzada (cross-entropy loss).  
+
+Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e é treinado para ajustar os pesos de suas camadas no modelo para maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Isso é feito iterativamente em um corpus de texto, como os Contos de Machado de Assis.  
+
+Ao prever a palavra seguinte, o modelo é exposto a uma ampla variedade de contextos e padrões linguísticos, o que permite que ele aprenda a reconhecer e capturar informações sobre estrutura gramatical, sintaxe, semântica e co-ocorrência de palavras.
+
+Depois do pré-treinamento, o modelo nanoGPT pode ser ajustado (fine-tuned) em uma tarefa específica usando dados rotulados. Durante o ajuste fino, a função objetivo pode ser alterada para se adequar à tarefa específica em questão, como classificação de sentimentos, tradução ou geração de texto condicional.
+&nbsp;  
+&nbsp;  
+O método abaixo implementa a função objetivo no treinamento do modelo nanoGPT:
+
+```python
+def get_batch(split):
+    data = train_data if split == 'train' else val_data
+    ix = torch.randint(len(data) - config.max_len, (config.batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i + config.max_len]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+config.max_len]).astype(np.int64)) for i in ix])
+    
+    if device == 'cuda':
+        # pin arrays x,y, que nos permite movê-los para a GPU de forma assíncrona (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+```
 
 Dado a seguinte sentença: 
 *"A figura é poética, mas "*, a sentença codificada para tokens:&nbsp;  
@@ -115,7 +147,7 @@ Dado a seguinte sentença:
 [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66,101, 71, 60, 54, 52, 10, 1, 64, 52, 70]
 &nbsp;  
 &nbsp;  
-A função objetiva para o pré-treinamento do modelo nanoGPT segue este padrão: 
+A função objetivo para o pré-treinamento do modelo nanoGPT segue este padrão: 
 &nbsp;  
 
 ```
