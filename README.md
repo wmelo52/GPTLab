@@ -8,6 +8,7 @@ O objetivo deste trabalho é ajudar as pessoas a se familiarizarem com a estrutu
 Se você não é um profissional de aprendizado profundo e quer apenas compreender as arquiteturas desses novos modelos LLMs (Modelos de Linguagem de Grande Escala), a maneira mais rápida de começar é treinar um modelo GPT de tamanho 200k (treinamento em CPU) ou de tamanho de 10M (treinamento em GPU com 4 GB) utilizando como corpus as obras de Machado de Assis ou as obras de Shakespeare.
 &nbsp;  
 &nbsp;  
+&nbsp;  
 ## Índice
 1. [Instalação](#Instalação)
 2. [Tokenizer](#Tokenizer)
@@ -19,7 +20,7 @@ Se você não é um profissional de aprendizado profundo e quer apenas compreend
 8. [Experimento 1](#Experimento-1)
 9. [Experimento 2](#Experimento-2)
 10. [Experimento 3](#Experimento-3)
-11. [Solução de problemas](#Solução-de-problemas)
+11. [Comparação de vários LLMs com o nanoGPT](#Comparação-de-vários-LLMs-com-o-nanoGPT)
 12. [Referências](#Referências)
 13. [Reconhecimentos](#Reconhecimentos)
 
@@ -224,7 +225,21 @@ x é a entrada original,<br/>
 
 A normalização por camada tem o efeito de centralizar os valores de ativação em torno de zero e escalá-los para uma distribuição de variância unitária. Isso é benéfico para o treinamento do modelo, pois ajuda a evitar o desvanecimento ou explosão do gradiente, facilita a propagação dos gradientes e melhora a generalização do modelo.
 Além disso, a normalização por camada é aplicada independentemente para cada exemplo de entrada na dimensão do lote, o que permite que o modelo se beneficie de uma normalização adaptativa que leva em consideração as estatísticas específicas de cada exemplo.
+```python
+class LayerNorm(nn.Module):
+    "Constroi um módulo layernorm."
 
+    def __init__(self, ndim, bias, eps=1e-5):
+        super(LayerNorm, self).__init__()
+        self.a_2 = nn.Parameter(torch.ones(ndim))
+        self.b_2 = nn.Parameter(torch.zeros(ndim)) 
+        self.eps = eps
+
+    def forward(self, x):
+        mean = x.mean(-1, keepdim=True)
+        std = x.std(-1, keepdim=True)
+        return self.a_2 * (x - mean) / (std + self.eps) + self.b_2 
+```
 Em resumo, a camada de normalização no decodificador do GPT é uma etapa fundamental para garantir a estabilidade do treinamento, melhorar o fluxo de informação e a capacidade de representação do modelo.
 <br/><br/><br/>
 
@@ -282,6 +297,20 @@ Em seguida, é aplicada uma função softmax aos resultados para obter os pesos 
 **Etapa 3:** Então, multiplique a attention (att) com o vetor de valores (v).
 
 Combinação Linear Ponderada dos Valores: Os pesos de atenção são utilizados para ponderar os valores correspondentes. As palavras na sequência são combinadas linearmente com base nos pesos calculados. O resultado é uma representação contextualizada para cada palavra, levando em consideração as relações com as outras palavras da sequência.
+```python
+def attention(q, k, v, mask_att, attn_dropout, mask=None, dropout=None):   
+    # Suspeitamos que para grandes valores de n_embd, os produtos escalares crescem em magnitude, 
+    # empurrando a função softmax para regiões onde ela produz gradientes extremamente pequenos
+    # Para neutralizar esse efeito, escalamos os produtos escalares por 1/raiz(n_embd//n_head (1.0 / math.sqrt(k.size(-1)))
+    att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+    if mask is not None:
+        att = att.masked_fill(mask_att == 0, float('-inf'))
+    att = F.softmax(att, dim=-1)
+    if dropout != 0.0:
+        att = attn_dropout(att)
+    z = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
+    return z
+```
 <br/><br/>
 
 **Etapa 4:** Assim que tivermos isso, passaremos por uma camada de concatenação em que é feito por esta linha de código em python:
@@ -318,6 +347,22 @@ Em seguida, a segunda camada linear reduz a dimensão do espaço intermediário 
 A aplicação das transformações não lineares nas camadas lineares consecutivas ajuda o modelo a capturar padrões complexos nos dados de entrada, fornecendo uma maior flexibilidade na representação das informações.
 
 A camada Feed Forward no decodificador do modelo GPT é essencial para aprimorar a capacidade de aprendizado e a expressividade do modelo, permitindo que ele capture relações mais complexas e melhore a qualidade das previsões de sequência geradas pelo decodificador.
+```python
+class MLP(nn.Module):
+
+    def __init__(self, config):
+        super().__init__()
+        self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd, bias=config.bias)
+        self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd, bias=config.bias)
+        self.dropout = nn.Dropout(config.dropout)
+
+    def forward(self, x):
+        x = self.c_fc(x)
+        x = new_gelu(x)
+        x = self.c_proj(x)
+        x = self.dropout(x)
+        return x
+```
 
 <br/><br/>  
 
@@ -365,10 +410,11 @@ n_head = 6
 n_layer = 6
 dropout = 0.2
 batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
-block_size = 64 # Qual é o comprimento máximo de contexto para previsões?
-O script “training_nanoGPT_GPU.py” 
-E utilizar o arquivo obras_machado_de_assis_conto.txt como corpus de treinamento
+max_len = 64 # Qual é o comprimento máximo de contexto para previsões?
+max_iters = 5000
 ```
+O script `training_nanoGPT_GPU.py` é utilizado para treinar o modelo e utilizar o arquivo `obras_machado_de_assis_conto.txt` como corpus de treinamento
+
 
 
 Isso gera algumas amostras, por exemplo:
@@ -395,7 +441,7 @@ Nada mal para um modelo de nível de personagem após 30 minutos de treinamento 
 
 (ou outro computador barato). Não se preocupe, ainda podemos treinar o nanoGPT, mas queremos diminuir um pouco as coisas. 
 
-Para treinamento em CPU recomendo o uso do arquivo “train_nanoGPT_cpu.py” em que os hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar tanto o arquivo shakespeare.txt como corpus de treinamento ou o arquivo machado_de_assis_conto.txt.
+Para treinamento em CPU recomendo o uso do arquivo `train_nanoGPT_cpu.py` em que os hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar tanto o arquivo `shakespeare.txt` ou o arquivo `machado_de_assis_conto.txt` como corpus de treinamento.
 
 Nosso tamanho de contexto é de apenas 32 caracteres em vez de 64 e o tamanho do lote apenas 32 exemplos por iteração, não 64. Também usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embeddings de 64) e diminuiremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (`--dropout=0.0`). Isso ainda é executado em cerca de 14 minutos, mas nos dá uma perda de 2,02 e, portanto, também amostras piores, mas ainda é uma boa diversão:
 ```
@@ -405,7 +451,8 @@ n_head = 4
 n_layer = 4
 dropout = 0.0
 batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
-block_size = 32 # Qual é o comprimento máximo de contexto para previsões?
+max_len = 32 # Qual é o comprimento máximo de contexto para previsões?
+max_iters = 5000
 ```
 
 Isso gera algumas amostras, mas de qualidade inferior do gerado acima com GPU:
@@ -429,7 +476,8 @@ A perda na validação para o treinamento em CPU
 </div>
 <br/><br/>
 
-Quando utilizamos o treinamento em CPU o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 64 o que dá 115x64 = 7360. O número total de parâmetros deste modelo é 207.936, então a camada de embeddings tomaria 3,54% deste total. Se utilizássemos o tokenizador do GPT-2 que usa o algorítmico [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo: 50257x64 = 3.216.448 e a camada embeddings tomaria 94,13% do tamanho do modelo.
+- Quando utilizamos o treinamento em CPU o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 64 o que dá 115x64 = 7360. 
+- O número total de parâmetros deste modelo é 207.936, então a camada de embeddings tomaria 3,54% deste total. Se utilizássemos o tokenizador do GPT-2 que usa o algorítmico [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo: 50257x64 = 3.216.448 e a camada embeddings tomaria 94,13% do tamanho do modelo.
 
 <br/><br/>
 
@@ -552,13 +600,40 @@ Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de gera
 Em resumo, `torch.multinomial` é frequentemente preferido em modelos de geração de linguagem, como o GPT, para introduzir aleatoriedade e aumentar a diversidade no texto gerado. Por outro lado, `torch.argmax` é útil quando se deseja escolher o token mais provável de forma determinística ou priorizar predições de alta confiança.
 
 <br/><br/>
-## Solução de problemas
+## Comparação de vários LLMs com o nanoGPT
+&nbsp;  
+&nbsp; 
+[A Survey of Large Language Models](https://arxiv.org/abs/2303.18223)
 
-Observe que, por padrão, este repositório usa PyTorch 2.0 (ou seja, `torch.compile`). Isso é bastante novo e experimental e ainda não está disponível em todas as plataformas (por exemplo, Windows). Se você estiver encontrando mensagens de erro relacionadas, tente não usar este recurso . Isso diminuirá a velocidade do código, mas pelo menos ele será executado.
+Comparação de vários LLMs com detalhes de configurações públicas com o **nanoGPT**. Aqui, PE denota embeddings posicional, #L denota o número de camadas, #H denota o número de heads de atenção, dmodel denota a dimensão do modelo e MCL denota o comprimento máximo do contexto durante o treinamento.
+&nbsp;  
+
+| Model      | Category       | Size      | Normalization      | PE      | Activation    | Bias    | #L      | #H      | dmodel      | MCL      |
+| ---------- | -------------- | --------- | ------------------ | ------- | ------------- | ------- | ------- | ------- | ----------- | -------- |
+| GPT3 [55]  | Causal decoder | 175B      | Pre Layer Norm     | Learned | GeLU          | x       | 96      | 96      | 12288       | 2048     |
+| PanGU-[75] | Causal decoder | 207B      | Pre Layer Norm     | Learned | GeLU          | x       | 64      | 128     | 16384       | 1024     |
+| OPT [81]   | Causal decoder | 175B      | Pre Layer Norm     | Learned | ReLU          | x       | 96      | 96      | 12288       | 2048     |
+| PaLM  [56] | Causal decoder | 540B      | Pre Layer Norm     | RoPE    | SwiGLU        |         | 118     | 48      | 18432       | 2048     |
+| BLOOM [69] | Causal decoder | 176B      | Pre Layer Norm     | ALiBi   | GeLU          | x       | 70      | 112     | 14336       | 2048     |
+| MT-NLG [97]| Causal decoder | 530B      | -                  | -       | -             | -       | 105     | 128     | 20480       | 2048     |
+| Gopher [59]| Causal decoder | 280B      | Pre RMS Norm       | Relative| -             | -       | 80      | 128     | 16384       | 2048     |
+| Chinchilla | Causal decoder | 70B       | Pre RMS Norm       | Relative| -             | -       | 80      | 64      | 8192        | -        |
+| Galactica  | Causal decoder | 120B      | Pre Layer Norm     | Learned | GeLU          | -       |96       | 80      | 10240       | 2048     |
+| LaMDA      | Causal decoder | 137B      | -                  | Relative| GeGLU         | -       | 64      | 128     | 8192        | -        |
+| Jurassic-1 | Causal decoder | 178B      | Pre Layer Norm     | Learned | GeLU          | x       | 76      | 96      | 13824       | 2048     |
+| LLaMA      | Causal decoder | 65B       | Pre RMS Norm       | RoPE    | SwiGLU        | x       | 80      | 64      | 8192        | 2048     |
+| GLM-130B   | Prefix decoder | 130B      | Post Deep Norm     | RoPE    | GeGLU         | x       | 70      | 96      | 12288       | 2048     | 
+| T5         | Encoder-decoder| 11B       | Pre RMS Norm       | Relative| ReLU          | -       | 24      | 128     | 1024        | 512      |
+| `nanoGPT`  | Causal decoder | 10M       | Pre Layer Norm     | Learned | GeLU          | x       | 6       | 6       | 384         | 128      |
+
+&nbsp;  
+
 <br/>
 &nbsp;  
 <br/>
+
 ## Referências
+
 [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
 
 [GitHub](https://github.com/karpathy/nanoGPT)
