@@ -239,6 +239,8 @@ Onde:
 - `a_2` dimensiona o tensor normalizado, (x - média) / (std + eps) que normaliza a entrada,
 - `b_2` é um termo de viés opcional.
 
+OBS: `a_2` e `b_2` são parâmetros aprendido durante o pré-treinamento de dimenão 384.
+
 A normalização por camada tem o efeito de centralizar os valores de ativação em torno de zero e escalá-los para uma distribuição de variância unitária. Isso é benéfico para o treinamento do modelo, pois ajuda a evitar o desvanecimento ou explosão do gradiente, facilita a propagação dos gradientes e melhora a generalização do modelo.
 Além disso, a normalização por camada é aplicada independentemente para cada exemplo de entrada na dimensão do lote, o que permite que o modelo se beneficie de uma normalização adaptativa que leva em consideração as estatísticas específicas de cada exemplo.
 ```python
@@ -256,7 +258,6 @@ class LayerNorm(nn.Module):
         std = x.std(-1, keepdim=True)
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2 
 ```
-OBS: `a_2` e `b_2` são parâmetros aprendido durante o pré-treinamento de dimenão 384.
 
 Em resumo, a camada de normalização no decodificador do GPT é uma etapa fundamental para garantir a estabilidade do treinamento, melhorar o fluxo de informação e a capacidade de representação do modelo.
 <br/><br/><br/>
@@ -457,6 +458,10 @@ fechação e dos novos. Nã
 ```
 Nada mal para um modelo de nível de personagem após 30 minutos de treinamento em uma GPU. 
 
+Você poderia usar o script `inference_nanoGPT.py` para gerar algum texto baseado numa sentença inicial.
+
+&nbsp;
+
 &nbsp;  
 ## Eu só tenho um PC comum
 
@@ -491,6 +496,9 @@ Zreza. Eras,
 portico que afelta,
 trilhos, a empriserque aveda; e mau carma ergunde entr, que quano  é o coônio dimprande e Evoi que ambera esam, não ter o larezes.
 ```
+
+Você poderia usar o script `inference_nanoGPT.py` para gerar algum texto baseado numa sentença inicial.
+<br/><br/>
 A perda na validação para o treinamento em CPU
 <div align="left">
   <img alt="text" src="assets/val_loss_machado_de_assis_conto_CPU.png" width="500" height="300">
@@ -662,11 +670,13 @@ Comparação de vários LLMs com detalhes de configurações públicas com o **n
 
 [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
 
-[GitHub](https://github.com/karpathy/nanoGPT)
+[nanoGPT](https://github.com/karpathy/nanoGPT)
 
 [Building a GPT-like Model from Scratch with Detailed Theory](https://habr.com/en/companies/ods/articles/708672/)
 
 [The Illustrated Transformer, Jay Alammar](https://jalammar.github.io/illustrated-transformer/)
+
+[Deep Learning with PyTorch-Manning Publications](https://www.amazon.com/Deep-Learning-PyTorch-Eli-Stevens/dp/1617295264)
 
 
 <br/><br/>
