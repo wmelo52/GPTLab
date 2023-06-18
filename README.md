@@ -22,7 +22,7 @@ Se você não é um profissional de aprendizado profundo e quer apenas compreend
 10. [Experimento 3](#Experimento-3)
 11. [Comparação de vários LLMs com o nanoGPT](#Comparação-de-vários-LLMs-com-o-nanoGPT)
 12. [Referências](#Referências)
-13. [Reconhecimentos](#Reconhecimentos)
+
 
 &nbsp;  
 
@@ -116,7 +116,21 @@ nanoGPTModel(
 A função objetivo no pré-treinamento do modelo **nanoGPT** tem como objetivo principal treinar o modelo para aprender a capturar e modelar padrões em textos de treinamento de maneira não supervisionada.    
 O pré-treinamento do nanoGPT é realizado utilizando uma tarefa chamada de "previsão da palavra seguinte" (next-word prediction).
 
-A função objetivo no pré-treinamento é definida da seguinte maneira: dado um contexto de tokens anteriores, o modelo é treinado para prever qual é o próximo token no texto original. Essa previsão é comparada com o token real que aparece no texto e a diferença entre a previsão e o token real é usada para calcular uma medida de perda, como a entropia cruzada (cross-entropy loss).  
+A função objetivo no pré-treinamento é definida da seguinte maneira: dado um contexto de tokens anteriores, o modelo é treinado para prever qual é o próximo token no texto original. Essa previsão é comparada com o token real que aparece no texto e a diferença entre a previsão e o token real é usada para calcular uma medida de perda, como a entropia cruzada (cross-entropy loss - a função de entropia cruzada é usada como uma medida para calcular a discrepância entre a distribuição de probabilidade prevista pelo modelo e a distribuição de probabilidade real dos dado).  
+
+A fórmula da função de entropia cruzada discreta pode ser expressa da seguinte forma:
+<p align="left">
+<img src="assets/cross-entropy.jpg" width="200"/>
+</p>
+
+Onde:
+- H(p,q) é a entropia cruzada entre as distribuições 
+- p representa a distribuição de probabilidade real dos dados.
+- q representa a distribuição de probabilidade prevista pelo modelo.
+- n é o número de caracteres possíveis.
+
+A entropia cruzada é calculada para cada evento possível (caractere, no caso do modelo nanoGPT) e, em seguida, somada para obter a perda total.
+
 
 Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e é treinado para ajustar os pesos de suas camadas no modelo para maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Isso é feito iterativamente em um corpus de texto, como os Contos de Machado de Assis.  
 
@@ -215,13 +229,15 @@ A camada de normalização é uma técnica utilizada em redes neurais para norma
 
 Especificamente, a normalização por camada calcula as estatísticas de média e variância dos valores de ativação em uma camada específica e, em seguida, normaliza os valores subtraindo a média e dividindo pelo desvio padrão. Isso é feito para cada unidade de ativação individualmente. A fórmula matemática para a normalização por camada é a seguinte:
 ```
-y = (x - μ) / σ
+y = a_2*((x - μ)/σ + eps) + b_2
 ```
 Onde:
-y é a saída normalizada,<br/>
-x é a entrada original,<br/>
-μ é a média dos valores de ativação na camada,<br/>
-σ é o desvio padrão dos valores de ativação na camada.<br/>
+- `y` é a saída normalizada,
+- `x` é a entrada original,
+- `μ` é a média dos valores de ativação na camada,
+- `σ` é o desvio padrão dos valores de ativação na camada.
+- `a_2` dimensiona o tensor normalizado, (x - média) / (std + eps) que normaliza a entrada,
+- `b_2` é um termo de viés opcional.
 
 A normalização por camada tem o efeito de centralizar os valores de ativação em torno de zero e escalá-los para uma distribuição de variância unitária. Isso é benéfico para o treinamento do modelo, pois ajuda a evitar o desvanecimento ou explosão do gradiente, facilita a propagação dos gradientes e melhora a generalização do modelo.
 Além disso, a normalização por camada é aplicada independentemente para cada exemplo de entrada na dimensão do lote, o que permite que o modelo se beneficie de uma normalização adaptativa que leva em consideração as estatísticas específicas de cada exemplo.
@@ -240,6 +256,8 @@ class LayerNorm(nn.Module):
         std = x.std(-1, keepdim=True)
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2 
 ```
+OBS: `a_2` e `b_2` são parâmetros aprendido durante o pré-treinamento de dimenão 384.
+
 Em resumo, a camada de normalização no decodificador do GPT é uma etapa fundamental para garantir a estabilidade do treinamento, melhorar o fluxo de informação e a capacidade de representação do modelo.
 <br/><br/><br/>
 
@@ -254,10 +272,12 @@ A conexão residual no decodificador do nanoGPT é utilizada como um caminho alt
 
 <br/><br/>
 ***O que é self-attention?***<br/><br/>
-<p align="center">
+<!-- <p align="center">
 <img src="assets/MHA.jpg" width="500"/>
-</p>
-<br/>
+</p> -->
+
+![nanoGPT](assets/MHA.jpg)
+<br/><br/>
 
 O mecanismo de self-attention, também conhecido como "atenção própria" ou "autoatenção", é um componente fundamental no decodificador do modelo nanoGPT (Generative Pre-trained Transformer).
 
@@ -311,10 +331,10 @@ def attention(q, k, v, mask_att, attn_dropout, mask=None, dropout=None):
     z = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
     return z
 ```
-<br/><br/>
+<br/>
 
 **Etapa 4:** Assim que tivermos isso, passaremos por uma camada de concatenação em que é feito por esta linha de código em python:
-```
+```python
 z = z.transpose(1, 2).contiguous().view(B, T, C)
 ```
 
@@ -335,7 +355,7 @@ O mecanismo de self-attention no decodificador do modelo GPT ajuda o modelo a en
 A camada Feed Forward é uma camada totalmente conectada que opera de forma independente em cada posição da sequência de entrada. Ela consiste em duas camadas lineares consecutivas, separadas por uma função de ativação não linear, uma função new [GELU](https://arxiv.org/abs/1606.08415) (Gaussian Error Linear Unit).
 
 A função new Gelu é definida matematicamente como:
-```
+```python
 gelu(x) = 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
 ```
 O propósito da camada Feed Forward é aplicar transformações não lineares aos dados de entrada, permitindo que o modelo capture relações mais complexas e não lineares entre as palavras. Essa camada ajuda a melhorar a representação e a capacidade de aprendizado do modelo.
@@ -378,13 +398,14 @@ Mais especificamente, a camada Linear Head possui um conjunto de neurônios (ou 
 O resultado dessa operação é uma pontuação (ou logits) para cada palavra do vocabulário, indicando a probabilidade relativa de cada palavra ser a próxima na sequência gerada pelo decodificador.
 
 A camada softmax, que segue a camada Linear Head, é responsável por transformar as pontuações (logits) em uma distribuição de probabilidade normalizada. A função softmax calcula a exponencial das pontuações e normaliza os valores resultantes pela soma de todas as exponenciais, atribuindo probabilidades a cada palavra do vocabulário.
+
 Em resumo, a camada Linear Head no decodificador do modelo GPT realiza a projeção linear das representações finais para pontuações associadas a cada palavra do vocabulário. Essas pontuações são então passadas pela camada softmax para obter uma distribuição de probabilidade sobre o vocabulário, permitindo a geração da próxima palavra na sequência.
 <br/><br/>
 <br/>  
 
 **Generate**<br/>
 Por fim,  O código Python abaixo realiza uma amostragem multinomial usando a biblioteca PyTorch. Vamos analisá-lo em detalhes:
-```
+```python
 idx_next = torch.multinomial(probs, num_samples=1)
 ```
 - **torch.multinomial**: É uma função da biblioteca PyTorch que realiza amostragem multinomial. Ela recebe dois argumentos principais: **probs** e **num_samples*.<br/>
@@ -534,7 +555,7 @@ Aumentei o número de iterações para 10.000, demorou agora 29 minutos e a perd
 <div align="left">
   <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_10000.png" width="500" height="300">
 </div>
-<br/><br/>
+<br/><br/><br/>
 
 ## Experimento 2
 <br/>
@@ -574,14 +595,19 @@ por esta:
 
 Obtemos a seguinte saída:
 ```
-A figura é poética, mas não é a da heroína do romance.                       
-— Esta de um como de um como de como de um como de um como de uma de uma de       
-uma de uma de uma de uma de uma de como de uma de uma de uma de uma de uma de 
-uma de uma de uma de como de uma de uma de uma de uma de uma  de uma de com
-uma de uma de uma de uma de uma de como de uma de uma de uma de uma de uma 
-uma de uma de uma de uma de uma de uma de uma de como de uma de uma de uma
-uma de uma de uma de uma de uma de uma de uma de como de uma de uma de uma
-uma de uma de uma de uma de uma de uma de uma de como de uma de uma de uma
+A figura é poética, mas não é a da heroína do romance. 
+Estava a mesma coisa de um minuto de mim. 
+A primeira vez que ele se descobria a ser a mesma coisa de um minuto
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto 
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto 
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto 
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto 
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto 
+de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto 
+de ser alguma coisa que ele se aconteceu a 
 ```
 Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de geração de linguagem, o objetivo é prever o próximo token mais provável dado o contexto. Tanto `torch.multinomial` quanto `torch.argmax` podem ser usados para esse propósito, mas eles têm propósitos diferentes e implicam em resultados diferentes.
 
@@ -624,7 +650,7 @@ Comparação de vários LLMs com detalhes de configurações públicas com o **n
 | LLaMA      | Causal decoder | 65B       | Pre RMS Norm       | RoPE    | SwiGLU        | x       | 80      | 64      | 8192        | 2048     |
 | GLM-130B   | Prefix decoder | 130B      | Post Deep Norm     | RoPE    | GeGLU         | x       | 70      | 96      | 12288       | 2048     | 
 | T5         | Encoder-decoder| 11B       | Pre RMS Norm       | Relative| ReLU          | -       | 24      | 128     | 1024        | 512      |
-| `nanoGPT`  | Causal decoder | 10M       | Pre Layer Norm     | Learned | GeLU          | x       | 6       | 6       | 384         | 128      |
+| **nanoGPT**| Causal decoder | 10M       | Pre Layer Norm     | Learned | GeLU          | x       | 6       | 6       | 384         | 128      |
 
 &nbsp;  
 
@@ -645,5 +671,4 @@ Comparação de vários LLMs com detalhes de configurações públicas com o **n
 
 <br/><br/>
 
-## Reconhecimentos
 
