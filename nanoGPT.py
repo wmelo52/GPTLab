@@ -180,6 +180,7 @@ class nanoGPTModel(nn.Module):
 
         assert self.config.vocab_size is not None
         assert self.config.max_len is not None
+        assert self.config.max_len <= 128  # comprimento máximo do contexto durante o treinamento
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(self.config.vocab_size, self.config.n_embd),
@@ -317,9 +318,6 @@ class nanoGPTModel(nn.Module):
         return idx
 
     
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
 
 class nanoGPTTokenizer():
 
