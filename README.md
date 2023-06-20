@@ -613,7 +613,7 @@ Rodando o vídeo observa-se que no início as posições "12","13","14" estavam 
 </div>
 <br/><br/>
 
-[vídeo embeddings posicional](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb/init_pos_emb_384.png)
+[vídeo embeddings posicional](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb)
 
 <br/><br/>
 &nbsp;  
