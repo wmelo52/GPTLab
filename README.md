@@ -86,7 +86,7 @@ Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para dim
 
 Mas o nosso objetivo é permitir o treinamento deste modelo para a maioria dos usuário que tem um computador comum, sem uma poderosa GPU que custa muito dinheiro.
 
-
+<br/><br/>
 
 ## Modelo GPT
 Os modelos de linguagem baseados em inteligência artificial têm desempenhado um papel cada vez mais importante na geração de  texto coerente e relevante com base em um contexto fornecido. Um desses modelos notáveis é o GPT (Generative Pre-trained Transformer), desenvolvido pela OpenAI.  
@@ -216,7 +216,6 @@ quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura 
 
 ## Explicando o modelo nanoGPT
 &nbsp; 
-
 ***Embeddings Posicional e Word Embeddings***
 
 No decodificador do modelo GPT são usados dois tipos de embeddings: Embeddings Posicional e Word Embeddings (embeddings de palavras).
@@ -715,8 +714,9 @@ tonos, para os olhos de fora, que Jafé, v pretos, sornais de maneira
 que dura o namorado musical. Tinha razão de andar tão notícia do tempo.
 Parece-lhe que estava vá, transpira-se com a mesma educação,
 ```
-Usamos o script `"inference_nanoGPT_tok_GPT2.py"` para gerar texto que utiliza o tokenizador tiktoken.
+Usamos o script `inference_nanoGPT_tok_GPT2.py` para gerar texto que utiliza o tokenizador tiktoken.
 <br/><br/>
+<br/>
 
 ## Referências
 
