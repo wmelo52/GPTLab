@@ -180,7 +180,7 @@ class nanoGPTModel(nn.Module):
 
         assert self.config.vocab_size is not None
         assert self.config.max_len is not None
-        assert self.config.max_len <= 128  # comprimento máximo do contexto durante o treinamento
+        assert self.config.max_len <= 128  # comprimento máximo do contexto que pode ser configurado
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(self.config.vocab_size, self.config.n_embd),
@@ -293,6 +293,9 @@ class nanoGPTModel(nn.Module):
         a sequência max_new_tokens vezes, alimentando as previsões de volta ao modelo a cada vez.
         Muito provavelmente você vai querer certificar-se de estar no modo de operação model.eval() para isso.
         """
+        b, t = idx.size()
+        assert t <= self.config.max_len, f"Não é possível encaminhar a sequência de comprimento {t}, o tamanho máximo de tokens na sentença é {self.config.max_len}"
+        
         for _ in range(max_new_tokens):
             # se o contexto da sequência estiver crescendo muito, devemos cortá-lo em max_len
             if idx.size(1) <= self.config.max_len:
