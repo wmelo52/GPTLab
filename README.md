@@ -685,11 +685,22 @@ Tokenizador de nível de caracter:
 
 - Segmentação: O tokenizador de nível de caracter segmenta o texto em unidades individuais de caracteres, como letras, números e sinais de pontuação. Cada caractere é tratado como um token separado.
 
+Para a sentença 'A figura é poética!', o resultado da tokenização é:
+```
+'A', ' ', 'f', 'i', 'g', 'u', 'r', 'a', ' ', 'é', ' ', 'p', 'o', 'é', 't', 'i', 'c', 'a', '!'
+```
 Tokenizador de nível de subpalavras:
 
 - Segmentação: O tokenizador de nível de subpalavras segmenta o texto em unidades menores, que podem ser partes de palavras ou subpalavras. Essas unidades são frequentemente criadas com base em um algoritmo de aprendizado de máquina, como o algoritmo BPE (Byte Pair Encoding) ou similar.
 
 Utilizamos o tokenizador da openAI (tiktoken) que usa o algoritmo BPE para codificar o texto em subpalavras.
+
+Para a sentença `'A figura é poética!'`, o resultado da tokenização é:
+```
+b'A', b' fig', b'ura', b' \xc3\xa9', b' po', b'\xc3\xa9t', b'ica', b'!'
+```
+O b na frente das strings indica que as strings são strings de bytes
+
 Como o tamanho do vocabulário é 50257 tokens, o tamanho da camada embeddings é aumentada para 50257*384=19.298.688 e o tamanho do modelo é agora de 29,93M.
 
 Quando treinamento é realizado numa máquina com uma GPU (**NVIDIA GeForce GTX 1050 Ti 4GB**) e usando o script ` “training_nanoGPT_tok_GPT2.py”` para treinar o modelo, resulta numa perda de validação de 3,42 e o tempo de treinamento foi de 36 minutos.
