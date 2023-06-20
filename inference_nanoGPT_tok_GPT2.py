@@ -17,7 +17,7 @@ with open(f'{model_path}/config.json', 'r', encoding='utf-8') as j:
 config = GPTConfig(**json_obj)
 
 # encode with tiktoken gpt2 bpe
-tokenizer = tiktoken.get_encoding("gpt2")
+encoding = tiktoken.get_encoding("gpt2")
 model = nanoGPTModel(config)    
 model.to(device)   
    
@@ -30,8 +30,10 @@ model.eval()
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 #sentence = 'To be or not to be '
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
-data = np.int64(tokenizer.encode(sentence))
+data = np.int64(encoding.encode(sentence))
 sent = torch.from_numpy(data).unsqueeze(0).to(device)
-print(tokenizer.decode(model.generate(sent, max_new_tokens=400)[0].tolist()))
+print(encoding.decode(model.generate(sent, max_new_tokens=500)[0].tolist()))
 
 #print(model.count_parameters())
+
+#[encoding.decode_single_token_bytes(token) for token in encoding.encode('A figura é poética!')]

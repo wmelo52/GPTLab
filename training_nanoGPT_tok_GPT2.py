@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import requests
 import tiktoken
 import numpy as np
 import time, datetime
@@ -22,9 +20,9 @@ train_data = data[:int(n*0.9)]
 val_data = data[int(n*0.9):]
 
 # encode with tiktoken gpt2 bpe
-tokenizer = tiktoken.get_encoding("gpt2")
-train_ids = tokenizer.encode_ordinary(train_data)
-val_ids = tokenizer.encode_ordinary(val_data)
+encoding = tiktoken.get_encoding("gpt2")
+train_ids = encoding.encode_ordinary(train_data)
+val_ids = encoding.encode_ordinary(val_data)
 print(f"train has {len(train_ids):,} tokens")
 print(f"val has {len(val_ids):,} tokens")
 
@@ -32,10 +30,10 @@ print(f"val has {len(val_ids):,} tokens")
 train_data = np.array(train_ids, dtype=np.uint16)
 val_data = np.array(val_ids, dtype=np.uint16)
 
-# tokenizer.decode(tokenizer.encode("Se o leitor é rapaz e dado ao gênio melancólico"))
+# encoding.decode(encoding.encode("Se o leitor é rapaz e dado ao gênio melancólico"))
 
 config = GPTConfig() 
-config.vocab_size = tokenizer.n_vocab
+config.vocab_size = encoding.n_vocab
 
 # Ajuste dos hiperparâmetros para uso de uma GPU com 4GB
 config.batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
@@ -109,4 +107,4 @@ model.save_pretrained(model_path)
     
 # generate from the model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(tokenizer.decode(model.generate(context, max_new_tokens=400)[0].tolist()))
+print(encoding.decode(model.generate(context, max_new_tokens=400)[0].tolist()))
