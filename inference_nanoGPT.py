@@ -32,4 +32,5 @@ data = np.int64(tokenizer.encode(sentence))
 sent = torch.from_numpy(data).unsqueeze(0).to(device)
 print(tokenizer.decode(model.generate(sent, max_new_tokens=1400)[0].tolist()))
 
-#print(model.count_parameters())
+# print(model.count_parameters())
+# print(model.transformer.h[0].ln_1.a_2)

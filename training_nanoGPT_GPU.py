@@ -26,7 +26,7 @@ config = GPTConfig()
 config.vocab_size = vocab_size
 
 # Ajuste dos hiperparâmetros para uso de uma GPU com 4GB
-config.batch_size = 64 # Quantas sequências independentes processaremos em paralelo?
+config.batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
 config.max_len = 64 # Qual é o comprimento máximo de contexto (token) para previsões?
 config.n_embd = 384
 config.n_head = 6

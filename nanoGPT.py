@@ -252,7 +252,7 @@ class nanoGPTModel(nn.Module):
         return logits, loss
     
 
-    def save_pretrained(self, save_directory, vocab):
+    def save_pretrained(self, save_directory, vocab=None):
         if os.path.isfile(save_directory):
             print(f"O caminho fornecido ({save_directory}) deve ser um diretório, não um arquivo")
             return
@@ -270,9 +270,10 @@ class nanoGPTModel(nn.Module):
         
         with open(f"{save_directory}/config.json", "w", encoding='utf-8') as jsonFile:
             jsonFile.write(self.config.json) 
-
-        with open(f"{save_directory}/vocab.txt", "w", encoding='utf-8') as f:
-            f.write(''.join(vocab)) 
+        
+        if vocab is not None:
+            with open(f"{save_directory}/vocab.txt", "w", encoding='utf-8') as f:
+                f.write(''.join(vocab)) 
             
     
     def count_parameters(self):
