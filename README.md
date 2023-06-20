@@ -6,6 +6,34 @@ Adaptações foram feitas para tornar o aprendizado do modelo mais didático.
 O objetivo deste trabalho é ajudar as pessoas a se familiarizarem com a estrutura de modelos de linguagem auto regressivo e noções básicas de tensores, PyTorch e redes neurais. Muitas dessas alterações foram baseadas no código fonte localizado em [huggingface/transformers PyTorch implementation](https://github.com/huggingface/transformers/blob/main/src/transformers/models/gpt2/modeling_gpt2.py)
 
 Se você não é um profissional de aprendizado profundo e quer apenas compreender as arquiteturas desses novos modelos LLMs (Modelos de Linguagem de Grande Escala), a maneira mais rápida de começar é treinar um modelo GPT de tamanho 200k (treinamento em CPU) ou de tamanho de 10M (treinamento em GPU com 4 GB) utilizando como corpus as obras de Machado de Assis ou as obras de Shakespeare.
+
+<br/>
+
+## Comparação de vários modelos LLMs com o nanoGPT
+&nbsp;  
+[A Survey of Large Language Models](https://arxiv.org/abs/2303.18223)
+
+Comparação de vários modelos LLMs com detalhes de configurações públicas com o **nanoGPT**. Aqui, `PE` denota embeddings posicional, `#L` denota o número de camadas, `#H` denota o número de heads de atenção, `dmodel` denota a dimensão do modelo e `MCL` denota o comprimento máximo do contexto durante o treinamento.
+&nbsp;  
+
+| Model      | Category       | Size      | Normalization      | PE      | Activation    | Bias    | #L      | #H      | dmodel      | MCL      |
+| ---------- | -------------- | --------- | ------------------ | ------- | ------------- | ------- | ------- | ------- | ----------- | -------- |
+| GPT3 [55]  | Causal decoder | 175B      | Pre Layer Norm     | Learned | GeLU          | x       | 96      | 96      | 12288       | 2048     |
+| PanGU-[75] | Causal decoder | 207B      | Pre Layer Norm     | Learned | GeLU          | x       | 64      | 128     | 16384       | 1024     |
+| OPT [81]   | Causal decoder | 175B      | Pre Layer Norm     | Learned | ReLU          | x       | 96      | 96      | 12288       | 2048     |
+| PaLM  [56] | Causal decoder | 540B      | Pre Layer Norm     | RoPE    | SwiGLU        |         | 118     | 48      | 18432       | 2048     |
+| BLOOM [69] | Causal decoder | 176B      | Pre Layer Norm     | ALiBi   | GeLU          | x       | 70      | 112     | 14336       | 2048     |
+| MT-NLG [97]| Causal decoder | 530B      | -                  | -       | -             | -       | 105     | 128     | 20480       | 2048     |
+| Gopher [59]| Causal decoder | 280B      | Pre RMS Norm       | Relative| -             | -       | 80      | 128     | 16384       | 2048     |
+| Chinchilla | Causal decoder | 70B       | Pre RMS Norm       | Relative| -             | -       | 80      | 64      | 8192        | -        |
+| Galactica  | Causal decoder | 120B      | Pre Layer Norm     | Learned | GeLU          | -       |96       | 80      | 10240       | 2048     |
+| LaMDA      | Causal decoder | 137B      | -                  | Relative| GeGLU         | -       | 64      | 128     | 8192        | -        |
+| Jurassic-1 | Causal decoder | 178B      | Pre Layer Norm     | Learned | GeLU          | x       | 76      | 96      | 13824       | 2048     |
+| LLaMA      | Causal decoder | 65B       | Pre RMS Norm       | RoPE    | SwiGLU        | x       | 80      | 64      | 8192        | 2048     |
+| GLM-130B   | Prefix decoder | 130B      | Post Deep Norm     | RoPE    | GeGLU         | x       | 70      | 96      | 12288       | 2048     | 
+| T5         | Encoder-decoder| 11B       | Pre RMS Norm       | Relative| ReLU          | -       | 24      | 128     | 1024        | 512      |
+| **nanoGPT**| Causal decoder | 10M       | Pre Layer Norm     | Learned | GeLU          | x       | 6       | 6       | 384         | 128      |
+
 &nbsp;  
 &nbsp;  
 &nbsp;  
@@ -20,11 +48,24 @@ Se você não é um profissional de aprendizado profundo e quer apenas compreend
 8. [Experimento 1](#Experimento-1)
 9. [Experimento 2](#Experimento-2)
 10. [Experimento 3](#Experimento-3)
-11. [Comparação de vários LLMs com o nanoGPT](#Comparação-de-vários-LLMs-com-o-nanoGPT)
+11. [Experimento 4](#Experimento-4)
 12. [Referências](#Referências)
 
 
 &nbsp;  
+&nbsp;  
+## Instalação
+
+Dependências:
+
+- python > 3.9
+- [pytorch](https://pytorch.org) > 2.0
+- sklearn==1.2.2
+- gensim==4.3.1
+- tiktoken
+<br/><br/>
+O Windows ainda não é compatível com o torch.compile
+<br/><br/><br/>
 
 ## Tokenizer
 Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
@@ -45,16 +86,7 @@ Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para dim
 
 Mas o nosso objetivo é permitir o treinamento deste modelo para a maioria dos usuário que tem um computador comum, sem uma poderosa GPU que custa muito dinheiro.
 
-&nbsp;  
-## Instalação
 
-Dependências:
-
-- python > 3.9
-- [pytorch](https://pytorch.org) > 2.0
-- sklearn==1.2.2
-- gensim==4.3.1
-<br/><br/><br/>
 
 ## Modelo GPT
 Os modelos de linguagem baseados em inteligência artificial têm desempenhado um papel cada vez mais importante na geração de  texto coerente e relevante com base em um contexto fornecido. Um desses modelos notáveis é o GPT (Generative Pre-trained Transformer), desenvolvido pela OpenAI.  
@@ -127,7 +159,7 @@ Onde:
 - H(p,q) é a entropia cruzada entre as distribuições 
 - p representa a distribuição de probabilidade real dos dados.
 - q representa a distribuição de probabilidade prevista pelo modelo.
-- n é o número de caracteres possíveis.
+- n é o número de tokens (caracteres) possíveis.
 
 A entropia cruzada é calculada para cada evento possível (caractere, no caso do modelo nanoGPT) e, em seguida, somada para obter a perda total.
 
@@ -567,6 +599,9 @@ Aumentei o número de iterações para 10.000, demorou agora 29 minutos e a perd
 
 ## Experimento 2
 <br/>
+
+**Vídeos sobre embeddings posicional e embeddings dos tokens**
+<br/>
 50 imagens foram geradas no treinamento do modelo nanoGPT. A cada 100 step duas imagens eram geradas reduzindo a dimensionalidade de 384 para 2 utilizando o algoritmo TNSE.
 
 No embeddings posicional as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site [clideo.com](https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
@@ -578,7 +613,8 @@ Rodando o vídeo observa-se que no início as posições "12","13","14" estavam 
 </div>
 <br/><br/>
 
-[vídeo embeddings posicional](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb)
+<!-- [vídeo embeddings posicional](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb) -->
+[vídeo embeddings posicional](https://github.com/wmelo52/GPTLab/blob/master/assets/init-pos-emb-384.mp4)
 <br/><br/>
 &nbsp;  
 
@@ -592,6 +628,10 @@ Para o token embeddings foram marcados dois grupos: vogais (`"a","e","i","o","u"
 
 ## Experimento 3
 <br/>
+
+**Prevendo o próximo token:  `torch.multinomial` ou `torch.argmax`**
+<br/>
+
 Substituindo esta linha no método generate da class nanoGPTModel:
 
 ```idx_next = torch.multinomial(probs, num_samples=1)```
@@ -633,38 +673,50 @@ Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de gera
 
 Em resumo, `torch.multinomial` é frequentemente preferido em modelos de geração de linguagem, como o GPT, para introduzir aleatoriedade e aumentar a diversidade no texto gerado. Por outro lado, `torch.argmax` é útil quando se deseja escolher o token mais provável de forma determinística ou priorizar predições de alta confiança.
 
+<br/>
 <br/><br/>
-## Comparação de vários LLMs com o nanoGPT
-&nbsp;  
-&nbsp; 
-[A Survey of Large Language Models](https://arxiv.org/abs/2303.18223)
 
-Comparação de vários LLMs com detalhes de configurações públicas com o **nanoGPT**. Aqui, PE denota embeddings posicional, #L denota o número de camadas, #H denota o número de heads de atenção, dmodel denota a dimensão do modelo e MCL denota o comprimento máximo do contexto durante o treinamento.
-&nbsp;  
 
-| Model      | Category       | Size      | Normalization      | PE      | Activation    | Bias    | #L      | #H      | dmodel      | MCL      |
-| ---------- | -------------- | --------- | ------------------ | ------- | ------------- | ------- | ------- | ------- | ----------- | -------- |
-| GPT3 [55]  | Causal decoder | 175B      | Pre Layer Norm     | Learned | GeLU          | x       | 96      | 96      | 12288       | 2048     |
-| PanGU-[75] | Causal decoder | 207B      | Pre Layer Norm     | Learned | GeLU          | x       | 64      | 128     | 16384       | 1024     |
-| OPT [81]   | Causal decoder | 175B      | Pre Layer Norm     | Learned | ReLU          | x       | 96      | 96      | 12288       | 2048     |
-| PaLM  [56] | Causal decoder | 540B      | Pre Layer Norm     | RoPE    | SwiGLU        |         | 118     | 48      | 18432       | 2048     |
-| BLOOM [69] | Causal decoder | 176B      | Pre Layer Norm     | ALiBi   | GeLU          | x       | 70      | 112     | 14336       | 2048     |
-| MT-NLG [97]| Causal decoder | 530B      | -                  | -       | -             | -       | 105     | 128     | 20480       | 2048     |
-| Gopher [59]| Causal decoder | 280B      | Pre RMS Norm       | Relative| -             | -       | 80      | 128     | 16384       | 2048     |
-| Chinchilla | Causal decoder | 70B       | Pre RMS Norm       | Relative| -             | -       | 80      | 64      | 8192        | -        |
-| Galactica  | Causal decoder | 120B      | Pre Layer Norm     | Learned | GeLU          | -       |96       | 80      | 10240       | 2048     |
-| LaMDA      | Causal decoder | 137B      | -                  | Relative| GeGLU         | -       | 64      | 128     | 8192        | -        |
-| Jurassic-1 | Causal decoder | 178B      | Pre Layer Norm     | Learned | GeLU          | x       | 76      | 96      | 13824       | 2048     |
-| LLaMA      | Causal decoder | 65B       | Pre RMS Norm       | RoPE    | SwiGLU        | x       | 80      | 64      | 8192        | 2048     |
-| GLM-130B   | Prefix decoder | 130B      | Post Deep Norm     | RoPE    | GeGLU         | x       | 70      | 96      | 12288       | 2048     | 
-| T5         | Encoder-decoder| 11B       | Pre RMS Norm       | Relative| ReLU          | -       | 24      | 128     | 1024        | 512      |
-| **nanoGPT**| Causal decoder | 10M       | Pre Layer Norm     | Learned | GeLU          | x       | 6       | 6       | 384         | 128      |
-
-&nbsp;  
-
+## Experimento 4
 <br/>
-&nbsp;  
-<br/>
+
+**Qual tokenizador usar: caracteres ou subpalavras**
+
+Tokenizador de nível de caracter:
+
+- Segmentação: O tokenizador de nível de caracter segmenta o texto em unidades individuais de caracteres, como letras, números e sinais de pontuação. Cada caractere é tratado como um token separado.
+
+Tokenizador de nível de subpalavras:
+
+- Segmentação: O tokenizador de nível de subpalavras segmenta o texto em unidades menores, que podem ser partes de palavras ou subpalavras. Essas unidades são frequentemente criadas com base em um algoritmo de aprendizado de máquina, como o algoritmo BPE (Byte Pair Encoding) ou similar.
+
+Utilizamos o tokenizador da openAI (tiktoken) que usa o algoritmo BPE para codificar o texto em subpalavras.
+Como o tamanho do vocabulário é 50257 tokens, o tamanho da camada embeddings é aumentada para 50257*384=19.298.688 e o tamanho do modelo é agora de 29,93M.
+
+Quando treinamento é realizado numa máquina com uma GPU (**NVIDIA GeForce GTX 1050 Ti 4GB**) e usando o script ` “training_nanoGPT_tok_GPT2.py”` para treinar o modelo, resulta numa perda de validação de 3,42 e o tempo de treinamento foi de 36 minutos.
+
+Quando o treinamento é realizado numa máquina com uma GPU mais robusta (**NVIDIA Quadro RTX 5000 16GB**), o tempo de treinamento é reduzido para 9 minutos.
+
+O texto gerado apresenta melhor qualidade porque a tokenização em nível de subpalavras permite capturar melhor a semântica das palavras e pode ser mais eficiente em termos de uso de tokens, mas pode exigir algum processamento adicional para lidar com os tokens gerados.
+
+```
+A figura é poética, mas não é a da heroína do romance. Tinha o serviço invecas chegara
+de ambos, Oprimina, Mozart, em que é tada menos curioso dos mais moléstias. Não lhe
+gostava com simples margens, porque a política adequara-se um emprego: a oficina que atribuía
+um homem. A Câmara, entrou, e recordou a montanha, tal ou casa-o com um
+fato da notícia mais do mau homem comum.
+Estêvão saiu de Nicolau, o pouco melancolicamente. A necessidade achava-os
+algumas suspeitadas e esses diamantes do promotor. Donde
+estas ainda eram amadas acordadas com viúvas da encomenda. Realmente, não tinha,
+defronte da primeira vila, um chapéu dia, comum, chamando sem olhar vontade desse
+votado. Este chamava-se do jantar muitas vezes; à algibeira, levava-as
+preocupada a um horizonte piano, obrigado, expressões primeiros tempos íntimas; não se deveria ter dado aos vinte e       
+tonos, para os olhos de fora, que Jafé, v pretos, sornais de maneira
+que dura o namorado musical. Tinha razão de andar tão notícia do tempo.
+Parece-lhe que estava vá, transpira-se com a mesma educação,
+```
+Usamos o script `"inference_nanoGPT_tok_GPT2.py"` para gerar texto que utiliza o tokenizador tiktoken.
+<br/><br/>
 
 ## Referências
 
