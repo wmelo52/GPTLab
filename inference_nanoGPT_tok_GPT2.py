@@ -7,9 +7,7 @@ import json
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-#model_path = 'checkpoints/shakespeare'
-#model_path = 'checkpoints/machado_de_assis_conto_CPU'
-model_path = 'checkpoints/machado_de_assis_conto'
+model_path = 'checkpoints/machado_de_assis_conto_tok_GPT2'
 
 with open(f'{model_path}/config.json', 'r', encoding='utf-8') as j:
     json_obj = json.loads(j.read())

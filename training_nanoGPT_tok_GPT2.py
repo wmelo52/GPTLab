@@ -10,7 +10,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 corpus = 'machado_de_assis_conto.txt'
 model_name = corpus.split(".")[0]
-model_path = f'checkpoints/{model_name}'
+model_path = f'checkpoints/{model_name}_tok_GPT2'
 
 with open('corpus/' + corpus, 'r', encoding='utf-8') as f:
     data = f.read()
@@ -107,4 +107,4 @@ model.save_pretrained(model_path)
     
 # generate from the model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(encoding.decode(model.generate(context, max_new_tokens=400)[0].tolist()))
+print(encoding.decode(model.generate(context, max_new_tokens=500)[0].tolist()))
