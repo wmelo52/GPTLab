@@ -58,14 +58,13 @@ Comparação de vários modelos LLMs com detalhes de configurações públicas c
 
 Dependências:
 
-- python > 3.9
-- [pytorch](https://pytorch.org) > 2.0
+- python >= 3.9
+- [pytorch](https://pytorch.org) >= 1.8.1
 - sklearn==1.2.2
 - gensim==4.3.1
 - tiktoken
+
 <br/><br/>
-O Windows ainda não é compatível com o torch.compile
-<br/><br/><br/>
 
 ## Tokenizer
 Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
