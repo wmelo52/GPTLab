@@ -81,7 +81,7 @@ def estimate_loss():
         losses = torch.zeros(config.eval_iters)
         for k in range(config.eval_iters):
             X, Y = get_batch(split)
-            logits, loss = model(X, Y)
+            logits, loss = model(X, Y)  # equivalente a model.forward(X, Y)
             losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
