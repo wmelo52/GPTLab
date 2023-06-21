@@ -64,6 +64,7 @@ Dependências:
 - gensim==4.3.1
 - tiktoken
 
+OBS: Flash Attention: verificar se versão do PyTorch tem suporte.
 <br/><br/>
 
 ## Tokenizer
