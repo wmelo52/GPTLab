@@ -18,13 +18,13 @@ Comparação de vários modelos LLMs com detalhes de configurações públicas c
 
 | Model      | Category       | Size      | Normalization      | PE      | Activation    | Bias    | #L      | #H      | dmodel      | MCL      |
 | ---------- | -------------- | --------- | ------------------ | ------- | ------------- | ------- | ------- | ------- | ----------- | -------- |
-| GPT3 [55]  | Causal decoder | 175B      | Pre Layer Norm     | Learned | GeLU          | x       | 96      | 96      | 12288       | 2048     |
-| PanGU-[75] | Causal decoder | 207B      | Pre Layer Norm     | Learned | GeLU          | x       | 64      | 128     | 16384       | 1024     |
-| OPT [81]   | Causal decoder | 175B      | Pre Layer Norm     | Learned | ReLU          | x       | 96      | 96      | 12288       | 2048     |
-| PaLM  [56] | Causal decoder | 540B      | Pre Layer Norm     | RoPE    | SwiGLU        |         | 118     | 48      | 18432       | 2048     |
-| BLOOM [69] | Causal decoder | 176B      | Pre Layer Norm     | ALiBi   | GeLU          | x       | 70      | 112     | 14336       | 2048     |
-| MT-NLG [97]| Causal decoder | 530B      | -                  | -       | -             | -       | 105     | 128     | 20480       | 2048     |
-| Gopher [59]| Causal decoder | 280B      | Pre RMS Norm       | Relative| -             | -       | 80      | 128     | 16384       | 2048     |
+| GPT3       | Causal decoder | 175B      | Pre Layer Norm     | Learned | GeLU          | X       | 96      | 96      | 12288       | 2048     |
+| PanGU      | Causal decoder | 207B      | Pre Layer Norm     | Learned | GeLU          | X       | 64      | 128     | 16384       | 1024     |
+| OPT        | Causal decoder | 175B      | Pre Layer Norm     | Learned | ReLU          | X       | 96      | 96      | 12288       | 2048     |
+| PaLM       | Causal decoder | 540B      | Pre Layer Norm     | RoPE    | SwiGLU        |         | 118     | 48      | 18432       | 2048     |
+| BLOOM      | Causal decoder | 176B      | Pre Layer Norm     | ALiBi   | GeLU          | X       | 70      | 112     | 14336       | 2048     |
+| MT-NLG     | Causal decoder | 530B      | -                  | -       | -             | -       | 105     | 128     | 20480       | 2048     |
+| Gopher     | Causal decoder | 280B      | Pre RMS Norm       | Relative| -             | -       | 80      | 128     | 16384       | 2048     |
 | Chinchilla | Causal decoder | 70B       | Pre RMS Norm       | Relative| -             | -       | 80      | 64      | 8192        | -        |
 | Galactica  | Causal decoder | 120B      | Pre Layer Norm     | Learned | GeLU          | -       |96       | 80      | 10240       | 2048     |
 | LaMDA      | Causal decoder | 137B      | -                  | Relative| GeGLU         | -       | 64      | 128     | 8192        | -        |
