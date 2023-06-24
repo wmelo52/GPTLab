@@ -125,4 +125,4 @@ plt.legend()
 plt.xlabel("eval_interval")
 plt.title("val/loss")
 plt.show
-plt.savefig(f'val_loss_{model_name}_CPU.png', format='png', dpi=300)
+plt.savefig(f'images/val_loss_{model_name}_CPU.png', format='png', dpi=300)
