@@ -453,7 +453,6 @@ Em resumo, o código realiza a amostragem multinomial a partir de um tensor de p
 O arquivo `teste_multinomial_dist.py` dá uma boa intuição de como funciona esta amostragem de uma distribuição multinomial.
 &nbsp;  
 &nbsp;  
-&nbsp;  
 O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere (`inference_nanoGPT_exp5.py`).
 
 ![nanoGPT](assets/dist_probs_char.png)
@@ -756,13 +755,13 @@ Existem algumas razões pelas quais várias heads são necessárias no mecanismo
 
 - Eficiência computacional: Embora o uso de várias heads possa aumentar o custo computacional, o mecanismo de self-attention pode ser paralelizado de forma eficiente. Isso significa que o modelo pode processar múltiplas cabeças de atenção em paralelo, aproveitando o poder de processamento das GPUs modernas. Portanto, o benefício em termos de desempenho geralmente supera o custo adicional.
 
-Em resumo, a utilização de várias heads no mecanismo de self-attention no decodificador do modelo GPT é necessária para capturar relações complexas, abordar diferentes aspectos do texto, melhorar a capacidade de generalização e aproveitar a eficiência computacional. Essa abordagem permite que o modelo entenda melhor a estrutura do texto e melhore seu desempenho em várias tarefas de processamento de linguagem natural.<br/>  
+Em resumo, a utilização de várias heads no mecanismo de self-attention no decodificador do modelo GPT é necessária para capturar relações complexas, abordar diferentes aspectos do texto, melhorar a capacidade de generalização e aproveitar a eficiência computacional. Essa abordagem permite que o modelo entenda melhor a estrutura do texto e melhore seu desempenho em várias tarefas de processamento de linguagem natural.
 <br/>  
-O script `inference_nanoGPT_exp5.py` foi utilizado para gerar a imagem abaixo. Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de caractere foi usado para tokenizar a sentença `'A figura é poética'`.
+O script `inference_nanoGPT_exp5.py` foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_CPU** (`n_head = 4`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de caractere foi usado para tokenizar a sentença `'A figura é poética'`.
 
 ![nanoGPT](assets/att_char.png)
 <br/>  <br/>  
-O script `inference_nanoGPT_tok_GPT2.py` foi utilizado para gerar a imagem abaixo. Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
+O script `inference_nanoGPT_tok_GPT2.py` foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_tok_GPT2** (`n_head = 6`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
 
 ![nanoGPT](assets/att_tiktoken.png)
 <br/><br/>
