@@ -27,7 +27,7 @@ model.eval()
 # generate from the model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 #sentence = 'To be or not to be '
-sentence = 'A figura é poética, mas não é a da heroína do romance.'
+sentence = 'A figura é poética,'
 data = np.int64(tokenizer.encode(sentence))
 sent = torch.from_numpy(data).unsqueeze(0).to(device)
 print(tokenizer.decode(model.generate(sent, max_new_tokens=1400)[0].tolist()))

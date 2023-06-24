@@ -68,11 +68,14 @@ def attention(q, k, v, mask_att, attn_dropout, mask=None, dropout=None):
     att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
     if mask is not None:
         att = att.masked_fill(mask_att == 0, float('-inf'))
+
     att = F.softmax(att, dim=-1)
+    att_wei = att.clone()
+
     if dropout != 0.0:
         att = attn_dropout(att)
     z = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
-    return z
+    return z, att_wei
         
 
 class MultiHeadedAttention(nn.Module):
@@ -118,13 +121,13 @@ class MultiHeadedAttention(nn.Module):
             z = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=self.dropout, is_causal=True)
         else:
             # implementação manual do mecanismo de atenção
-            z = attention(q, k, v, self.masks[:,:,:T,:T], self.attn_dropout, mask, self.dropout)
+            z, att_wei  = attention(q, k, v, self.masks[:,:,:T,:T], self.attn_dropout, mask, self.dropout)
             
         z = z.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
         # output projection
         attn = self.resid_dropout(self.c_proj(z))
-        return attn
+        return attn, att_wei 
     
     
 # MultiLayer perceptron    
@@ -155,7 +158,7 @@ class Block(nn.Module):
 
     def forward(self, x):
         hidden_states = self.ln_1(x)
-        attn_outputs = self.attn(hidden_states, mask=True)
+        attn_outputs, att_wei  = self.attn(hidden_states, mask=True)
         # residual connection
         hidden_states = x + attn_outputs
         residual = hidden_states
@@ -163,7 +166,7 @@ class Block(nn.Module):
         feed_forward_hidden_states = self.mlp(hidden_states)
         # residual connection
         hidden_states = residual + feed_forward_hidden_states
-        return hidden_states, attn_outputs        
+        return hidden_states, attn_outputs, att_wei         
 
 
 
@@ -180,7 +183,7 @@ class nanoGPTModel(nn.Module):
 
         assert self.config.vocab_size is not None
         assert self.config.max_len is not None
-        assert self.config.max_len <= 128  # comprimento máximo do contexto que pode ser configurado
+        assert self.config.max_len <= 256  # comprimento máximo do contexto que pode ser configurado
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(self.config.vocab_size, self.config.n_embd),
@@ -233,10 +236,10 @@ class nanoGPTModel(nn.Module):
         pos_emb = self.transformer.wpe(pos) # position embeddings na forma (1, t, n_embd)
         x = self.transformer.drop(tok_emb + pos_emb)
         
-        attentions = []
+        #attentions = []
         for block in self.transformer.h:
-            x, att = block(x)
-            attentions.append(att)
+            x, att, att_wei  = block(x)
+            #attentions.append(att)
             
         x = self.transformer.ln_f(x)
 
@@ -249,7 +252,7 @@ class nanoGPTModel(nn.Module):
             logits = self.lm_head(x[:, [-1], :]) # nota: usando a lista [-1] para preservar a dimensão de tempo(T)
             loss = None
 
-        return logits, loss
+        return logits, loss, att_wei
     
 
     def save_pretrained(self, save_directory, vocab=None):
@@ -304,7 +307,7 @@ class nanoGPTModel(nn.Module):
                 idx_cond = idx[:, -self.config.max_len:]
             #idx_cond = idx if idx.size(1) <= self.config.max_len else idx[:, -self.config.max_len:]
             # encaminhar o modelo para obter os logits para o índice na sequência
-            logits, _ = self(idx_cond)
+            logits, _, _ = self(idx_cond)
             # pegue os logits na etapa final e dimensione pela temperatura desejada
             logits = logits[:, -1, :] / temperature
             # opcionalmente, corte os logits para apenas as k principais opções

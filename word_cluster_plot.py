@@ -6,8 +6,8 @@ from nanoGPT import GPTConfig, nanoGPTModel, nanoGPTTokenizer
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model_path = 'checkpoints/shakespeare'
-model_path = 'checkpoints/machado_de_assis_conto_CPU'
-#model_path = 'checkpoints/machado_de_assis_conto'
+#model_path = 'checkpoints/machado_de_assis_conto_CPU'
+model_path = 'checkpoints/machado_de_assis_conto'
 
 model_name = model_path.split("/")[1]
 
@@ -41,10 +41,8 @@ with open("data/pos_emb_384.txt", "w", encoding='utf-8') as f:
 from sklearn.manifold import TSNE
 from gensim.models import KeyedVectors
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
 import os
-import numpy as np
 
 wv_name = 'pos_emb_384.txt'
 
@@ -73,6 +71,7 @@ def visualize_embeddings(model_path, wv_name, config, group1, group2):
 
     colors = ["black", "red", "b"]  
     colormap = []
+    
     for w in points["word"]:
         if w in group1:
             colormap.append(colors[1])
@@ -88,9 +87,9 @@ def visualize_embeddings(model_path, wv_name, config, group1, group2):
     fig = ax.get_figure()
     fig.savefig(os.path.join("images", f"{model_name}_{wv_name[:7]}_{config.max_iters}.png"))
 
-
+group = ["12","13","14"]
 vowels_group = ["a","e","i","o","u"]
-visualize_embeddings(model_path, wv_name, config, vowels_group, vowels_group)
+visualize_embeddings(model_path, wv_name, config, group, vowels_group)
 
 
 

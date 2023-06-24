@@ -33,5 +33,43 @@ sent = torch.from_numpy(data).unsqueeze(0).to(device)
 print(encoding.decode(model.generate(sent, max_new_tokens=500)[0].tolist()))
 
 #print(model.count_parameters())
-
 #[encoding.decode_single_token_bytes(token) for token in encoding.encode('A figura é poética!')]
+
+
+
+import matplotlib.pyplot as plt
+
+# plot the attention weights
+def plot_attentions_wei(sentence, device, config, encoding, model):    
+    data = np.int64(encoding.encode(sentence))
+    sent = torch.from_numpy(data).unsqueeze(0).to(device)
+
+    logits, loss, attention_weights = model(sent)
+
+    a = [encoding.decode_single_token_bytes(token) for token in encoding.encode(sentence)]
+    decoded = [t.decode() for t in a]
+
+    labels = decoded
+    target = decoded
+
+# visualize all attention heads on a single plot
+    fig, axs = plt.subplots(1, config.n_head, figsize=(20, 5), dpi=200)
+
+    for i in range(config.n_head):
+        att_wei_i = attention_weights.squeeze(0)[i].detach().cpu().numpy()
+        ax = axs[i]
+        ax.matshow(att_wei_i)
+
+    # display the number on each cell
+        for (k, j), z in np.ndenumerate(att_wei_i):
+            ax.text(j, k, '{:0.2f}'.format(z), ha='center', va='center', color='white', fontsize=3)
+
+        ax.set_xticks(range(len(labels)))
+        ax.set_yticks(range(len(target)))
+        ax.set_xticklabels(labels, rotation=90, fontsize=8)
+        ax.set_yticklabels(target, fontsize=8);
+        ax.set_title(f"head {i+1}")
+
+sentence = 'A figura é poética, mas não é a da heroína do romance.'
+plot_attentions_wei(sentence, device, config, encoding, model)
+    

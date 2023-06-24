@@ -15,6 +15,7 @@ model_path = f'checkpoints/{model_name}'
 
 with open('corpus/' + corpus, 'r', encoding='utf-8') as f:
     text = f.read()
+    #text = text.lower()
 
 print("length of dataset in characters: ", len(text))
 
@@ -81,7 +82,7 @@ def estimate_loss():
         losses = torch.zeros(config.eval_iters)
         for k in range(config.eval_iters):
             X, Y = get_batch(split)
-            logits, loss = model(X, Y)  # equivalente a model.forward(X, Y)
+            logits, loss, _ = model(X, Y)  # equivalente a model.forward(X, Y)
             losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
@@ -103,7 +104,7 @@ for iter in range(config.max_iters):
     xb, yb = get_batch('train')
 
     # evaluate the loss
-    logits, loss = model(xb, yb)
+    logits, loss, _ = model(xb, yb)
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
     optimizer.step()
