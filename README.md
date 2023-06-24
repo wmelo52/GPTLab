@@ -49,7 +49,8 @@ Comparação de vários modelos LLMs com detalhes de configurações públicas c
 9. [Experimento 2](#Experimento-2)
 10. [Experimento 3](#Experimento-3)
 11. [Experimento 4](#Experimento-4)
-12. [Referências](#Referências)
+12. [Experimento 5](#Experimento-5)
+13. [Referências](#Referências)
 
 
 &nbsp;  
@@ -450,7 +451,14 @@ O resultado dessa chamada de função é atribuído à variável `idx_next`. A v
 Em resumo, o código realiza a amostragem multinomial a partir de um tensor de probabilidades `probs` usando a função `torch.multinomial`. O resultado é um índice correspondente à palavra amostrada, que é armazenado na variável `idx_next`.
 
 O arquivo `teste_multinomial_dist.py` dá uma boa intuição de como funciona esta amostragem de uma distribuição multinomial.
+&nbsp;  
+&nbsp;  
+&nbsp;  
+O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere (`inference_nanoGPT_exp5.py`).
 
+![nanoGPT](assets/dist_probs_char.png)
+
+&nbsp;  
 &nbsp;  
 &nbsp;  
 
@@ -576,7 +584,8 @@ Observa-se também que as vogais maiúsculas estão próximas assim como as cons
   <img alt="text" src="assets/machado_de_assis_conto_pos_emb_5000.png" width="500" height="300">&nbsp;&nbsp;
   <img alt="text" src="assets/machado_de_assis_conto_tok_emb_5000.png" width="500" height="300">
 </div>
-<br/>
+<br/><br/>
+
 
 **Visualizando embeddings posicional e embeddings dos tokens (CPU)**
 
@@ -681,9 +690,9 @@ Em resumo, `torch.multinomial` é frequentemente preferido em modelos de geraç�
 
 **Qual tokenizador usar: caracteres ou subpalavras**
 
-Tokenizador de nível de caracter:
+Tokenizador de nível de caractere:
 
-- Segmentação: O tokenizador de nível de caracter segmenta o texto em unidades individuais de caracteres, como letras, números e sinais de pontuação. Cada caractere é tratado como um token separado.
+- Segmentação: O tokenizador de nível de caractere segmenta o texto em unidades individuais de caracteres, como letras, números e sinais de pontuação. Cada caractere é tratado como um token separado.
 
 Para a sentença 'A figura é poética!', o resultado da tokenização é:
 ```
@@ -729,6 +738,35 @@ Usamos o script `inference_nanoGPT_tok_GPT2.py` para gerar texto que utiliza o t
 <br/><br/>
 <br/>
 
+
+## Experimento 5
+<br/>
+
+**Plotando os pesos de atenção**
+<br/><br/>
+O mecanismo de self-attention no decodificador do modelo GPT utiliza várias "heads" para capturar diferentes relações e informações em um texto. Cada head é responsável por aprender uma representação diferente e capturar uma perspectiva única dos tokens de entrada.
+
+Existem algumas razões pelas quais várias heads são necessárias no mecanismo de self-attention:
+
+- Captura de relações complexas: Com várias heads, o modelo é capaz de aprender relações mais complexas entre os tokens. Cada cabeça de atenção tem sua própria matriz de pesos, o que permite que ela se concentre em diferentes partes do texto. Isso ajuda o modelo a capturar relações de dependência de longo alcance e a entender melhor a estrutura do texto.
+
+- Atenção em aspectos diferentes: Cada cabeça de atenção pode se especializar em diferentes aspectos do texto. Por exemplo, uma cabeça pode se concentrar nas relações sintáticas entre os tokens, enquanto outra pode se concentrar nas relações semânticas. Isso permite que o modelo capture diferentes tipos de informações contextuais e melhore sua capacidade de compreensão.
+
+- Melhor capacidade de generalização: Usar várias heads ajuda o modelo a generalizar melhor para diferentes tipos de tarefas. Cada cabeça pode aprender representações distintas e, quando combinadas, elas fornecem uma visão mais abrangente do texto. Essa abordagem pode melhorar o desempenho do modelo em várias tarefas de processamento de linguagem natural, como tradução, sumarização e resposta a perguntas.
+
+- Eficiência computacional: Embora o uso de várias heads possa aumentar o custo computacional, o mecanismo de self-attention pode ser paralelizado de forma eficiente. Isso significa que o modelo pode processar múltiplas cabeças de atenção em paralelo, aproveitando o poder de processamento das GPUs modernas. Portanto, o benefício em termos de desempenho geralmente supera o custo adicional.
+
+Em resumo, a utilização de várias heads no mecanismo de self-attention no decodificador do modelo GPT é necessária para capturar relações complexas, abordar diferentes aspectos do texto, melhorar a capacidade de generalização e aproveitar a eficiência computacional. Essa abordagem permite que o modelo entenda melhor a estrutura do texto e melhore seu desempenho em várias tarefas de processamento de linguagem natural.<br/>  
+<br/>  
+O script `inference_nanoGPT_exp5.py` foi utilizado para gerar a imagem abaixo. Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de caractere foi usado para tokenizar a sentença `'A figura é poética'`.
+
+![nanoGPT](assets/att_char.png)
+<br/>  <br/>  
+O script `inference_nanoGPT_tok_GPT2.py` foi utilizado para gerar a imagem abaixo. Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
+
+![nanoGPT](assets/att_tiktoken.png)
+<br/><br/>
+<br/><br/>
 ## Referências
 
 [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
@@ -741,7 +779,7 @@ Usamos o script `inference_nanoGPT_tok_GPT2.py` para gerar texto que utiliza o t
 
 [Deep Learning with PyTorch-Manning Publications](https://www.amazon.com/Deep-Learning-PyTorch-Eli-Stevens/dp/1617295264)
 
-
+[baby GPT on a trip](https://github.com/cthiriet/gpt-lab/blob/main/babygpt-trip.ipynb)
 <br/><br/>
 
 
