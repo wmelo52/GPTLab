@@ -450,10 +450,10 @@ O resultado dessa chamada de função é atribuído à variável `idx_next`. A v
 
 Em resumo, o código realiza a amostragem multinomial a partir de um tensor de probabilidades `probs` usando a função `torch.multinomial`. O resultado é um índice correspondente à palavra amostrada, que é armazenado na variável `idx_next`.
 
-O arquivo `teste_multinomial_dist.py` dá uma boa intuição de como funciona esta amostragem de uma distribuição multinomial.
+O arquivo [teste_multinomial_dist.py](https://github.com/wmelo52/GPTLab/blob/master/teste_multinomial_dist.py) dá uma boa intuição de como funciona esta amostragem de uma distribuição multinomial.
 &nbsp;  
 &nbsp;  
-O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere (`inference_nanoGPT_exp5.py`).
+O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere ([inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py)).
 
 ![nanoGPT](assets/dist_probs_char.png)
 
@@ -473,7 +473,7 @@ batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
 max_len = 64 # Qual é o comprimento máximo de contexto para previsões?
 max_iters = 5000
 ```
-O script `training_nanoGPT_GPU.py` é utilizado para treinar o modelo e utilizar o arquivo `obras_machado_de_assis_conto.txt` como corpus de treinamento
+O script [training_nanoGPT_GPU.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_GPU.py) é utilizado para treinar o modelo e utilizar o arquivo [obras_machado_de_assis_conto.txt](https://github.com/wmelo52/GPTLab/blob/master/corpus/machado_de_assis_conto.txt) como corpus de treinamento
 
 
 
@@ -496,7 +496,7 @@ fechação e dos novos. Nã
 ```
 Nada mal para um modelo de nível de personagem após 30 minutos de treinamento em uma GPU. 
 
-Você poderia usar o script `inference_nanoGPT.py` para gerar algum texto baseado numa sentença inicial.
+Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT.py) para gerar algum texto baseado numa sentença inicial.
 
 &nbsp;
 
@@ -505,7 +505,7 @@ Você poderia usar o script `inference_nanoGPT.py` para gerar algum texto basead
 
 (ou outro computador barato). Não se preocupe, ainda podemos treinar o nanoGPT, mas queremos diminuir um pouco as coisas. 
 
-Para treinamento em CPU recomendo o uso do arquivo `train_nanoGPT_cpu.py` em que os hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar tanto o arquivo `shakespeare.txt` ou o arquivo `machado_de_assis_conto.txt` como corpus de treinamento.
+Para treinamento em CPU recomendo o uso do arquivo [train_nanoGPT_cpu.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_CPU.py) em que os hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar tanto o arquivo `shakespeare.txt` ou o arquivo `machado_de_assis_conto.txt` como corpus de treinamento.
 
 Nosso tamanho de contexto é de apenas 32 caracteres em vez de 64 e o tamanho do lote apenas 32 exemplos por iteração, não 64. Também usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embeddings de 64) e diminuiremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (`--dropout=0.0`). Isso ainda é executado em cerca de 14 minutos, mas nos dá uma perda de 2,02 e, portanto, também amostras piores, mas ainda é uma boa diversão:
 ```
@@ -535,7 +535,7 @@ portico que afelta,
 trilhos, a empriserque aveda; e mau carma ergunde entr, que quano  é o coônio dimprande e Evoi que ambera esam, não ter o larezes.
 ```
 
-Você poderia usar o script `inference_nanoGPT.py` para gerar algum texto baseado numa sentença inicial.
+Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT.py) para gerar algum texto baseado numa sentença inicial.
 <br/><br/>
 A perda na validação para o treinamento em CPU
 <div align="left">
@@ -557,7 +557,7 @@ Para superar esse desafio, o t-SNE pode ser aplicado para reduzir a dimensionali
 
 
 
-O arquivo `word_cluster_plot.py` gera duas imagens
+O arquivo [word_cluster_plot.py](https://github.com/wmelo52/GPTLab/blob/master/word_cluster_plot.py) gera duas imagens
 - Token embeddings
 - embeddings posicional
 &nbsp;  &nbsp;  
@@ -733,7 +733,7 @@ tonos, para os olhos de fora, que Jafé, v pretos, sornais de maneira
 que dura o namorado musical. Tinha razão de andar tão notícia do tempo.
 Parece-lhe que estava vá, transpira-se com a mesma educação,
 ```
-Usamos o script `inference_nanoGPT_tok_GPT2.py` para gerar texto que utiliza o tokenizador tiktoken.
+Usamos o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) para gerar texto que utiliza o tokenizador tiktoken.
 <br/><br/>
 <br/>
 
@@ -757,11 +757,11 @@ Existem algumas razões pelas quais várias heads são necessárias no mecanismo
 
 Em resumo, a utilização de várias heads no mecanismo de self-attention no decodificador do modelo GPT é necessária para capturar relações complexas, abordar diferentes aspectos do texto, melhorar a capacidade de generalização e aproveitar a eficiência computacional. Essa abordagem permite que o modelo entenda melhor a estrutura do texto e melhore seu desempenho em várias tarefas de processamento de linguagem natural.
 <br/>  
-O script `inference_nanoGPT_exp5.py` foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_CPU** (`n_head = 4`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de caractere foi usado para tokenizar a sentença `'A figura é poética'`.
+O script [inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py) foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_CPU** (`n_head = 4`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de caractere foi usado para tokenizar a sentença `'A figura é poética'`.
 
 ![nanoGPT](assets/att_char.png)
 <br/>  <br/>  
-O script `inference_nanoGPT_tok_GPT2.py` foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_tok_GPT2** (`n_head = 6`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
+O script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_tok_GPT2** (`n_head = 6`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
 
 ![nanoGPT](assets/att_tiktoken.png)
 <br/><br/>
