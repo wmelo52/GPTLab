@@ -30,7 +30,8 @@ context = torch.zeros((1, 1), dtype=torch.long, device=device)
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
 data = np.int64(encoding.encode(sentence))
 sent = torch.from_numpy(data).unsqueeze(0).to(device)
-print(encoding.decode(model.generate(sent, max_new_tokens=500)[0].tolist()))
+output = model.generate(sent, max_new_tokens=500, temperature=0.5, top_k=None)
+print(encoding.decode(output[0].tolist()))
 
 #print(model.count_parameters())
 #[encoding.decode_single_token_bytes(token) for token in encoding.encode('A figura é poética!')]
