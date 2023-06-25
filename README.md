@@ -459,6 +459,19 @@ O gráfico abaixo mostra a distribuição de probabilidades na saída da funçã
 ![nanoGPT](assets/dist_probs_char.png)
 
 &nbsp;  
+**Temperatura**<br/>
+No contexto dos modelos de Linguagem de Múltiplas Tarefas (LLM), como o ChatGPT, o parâmetro "temperatura" é uma configuração que controla a aleatoriedade e a suavidade das respostas geradas pelo modelo.
+
+O parâmetro temperatura é usado durante o processo de amostragem para equilibrar a exploração e a explotação do modelo. Quando a temperatura é alta, as respostas geradas pelo modelo tendem a ser mais aleatórias, diversificadas e surpreendentes. Por outro lado, quando a temperatura é baixa, as respostas são mais determinísticas, coerentes e previsíveis.
+
+Ao definir a temperatura, você pode ajustar o equilíbrio entre a criatividade do modelo e a coesão das respostas. Uma temperatura alta pode levar a respostas mais criativas, mas também pode resultar em respostas incoerentes ou fora de contexto. Por outro lado, uma temperatura baixa pode fornecer respostas mais seguras, mas potencialmente menos interessantes.
+
+Por exemplo, quando a temperatura é definida como 0 (zero), a amostragem é totalmente determinística, e o modelo sempre escolherá a palavra mais provável em cada etapa de geração de texto. Em contrapartida, uma temperatura alta, como 1.0 ou superior, permitirá que o modelo explore mais as diferentes possibilidades e gere respostas mais variadas.
+
+É importante experimentar diferentes valores de temperatura para encontrar o equilíbrio adequado para a tarefa específica em mãos e para as preferências do usuário.
+```python
+output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
+```
 &nbsp;  
 &nbsp;  
 
@@ -478,7 +491,7 @@ O script [training_nanoGPT_GPU.py](https://github.com/wmelo52/GPTLab/blob/master
 
 
 
-Isso gera algumas amostras, por exemplo:
+Isso gera algumas amostras, por exemplo (temperature=1.0):
 
 ```
 pé, que uma sobretupou o lenço
@@ -495,7 +508,21 @@ a exputo do marido?
 que perdia dela nentrara, olhava com a rua sagradadeira, enfim, aprovantando tacrefundo a
 fechação e dos novos. Nã
 ```
-Nada mal para um modelo de nível de personagem após 30 minutos de treinamento em uma GPU. 
+Mudando a temperatura para `0.5`, o texto gerado é mais determinístico, coerente e previsível:
+
+```
+A figura é poética, porque ele viesse por casa de pequenas.
+O próprio menos não seriam mais de um dia de primeiro que o meu amor não tinha a primeira vez de partir, 
+desculpada de trazia um para ou dizer que o moço incumbiu a carta, e a confusão de presentes da verdadeira
+de uma vez, — e por que me fazia dar assim um amigo de parede. Não pensava em que
+o período de um grande moço não seria melhor de algumas primeiras, e tinha
+mais um dia de cor e as meias contentas de um pouco de figura a muito de casa. Ele dizerei que viesse que estava cansado, 
+a porta da casa do mesmo consolo da viúva. Na minha inimidade não me importa de conhecer e estava no comércio.
+A primeira vez que podem que estar completar o meu caso, e o primeiro irmão
+pela casa de algumas vezes lhe pareceram nas mãos. Nasceu termosamente a opinião da família do seu       
+caráter. Velho que ele disse que é a pouco depois de ser ao contrário.
+Estava assim de uma conversação.
+```
 
 Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT.py) para gerar algum texto baseado numa sentença inicial.
 
@@ -520,7 +547,7 @@ max_len = 32 # Qual é o comprimento máximo de contexto para previsões?
 max_iters = 5000
 ```
 
-Isso gera algumas amostras, mas de qualidade inferior do gerado acima com GPU:
+Isso gera algumas amostras, mas de qualidade inferior do gerado acima com GPU (temperature=1.0):
 
 ```
 Maltia avas, cão respípas dais,
@@ -716,7 +743,7 @@ Quando treinamento é realizado numa máquina com uma GPU (**NVIDIA GeForce GTX 
 
 Quando o treinamento é realizado numa máquina com uma GPU mais robusta (**NVIDIA Quadro RTX 5000 16GB**), o tempo de treinamento é reduzido para 9 minutos.
 
-O texto gerado apresenta melhor qualidade porque a tokenização em nível de subpalavras permite capturar melhor a semântica das palavras e pode ser mais eficiente em termos de uso de tokens, mas pode exigir algum processamento adicional para lidar com os tokens gerados.
+O texto gerado apresenta melhor qualidade porque a tokenização em nível de subpalavras permite capturar melhor a semântica das palavras e pode ser mais eficiente em termos de uso de tokens, mas pode exigir algum processamento adicional para lidar com os tokens gerados (temperatura=1.0).
 
 ```
 A figura é poética, mas não é a da heroína do romance. Tinha o serviço invecas chegara
@@ -734,6 +761,28 @@ tonos, para os olhos de fora, que Jafé, v pretos, sornais de maneira
 que dura o namorado musical. Tinha razão de andar tão notícia do tempo.
 Parece-lhe que estava vá, transpira-se com a mesma educação,
 ```
+
+Ajustando a temperatura para `0.5`, o texto gerado é mais determinístico, coerente e previsível:
+```
+A figura é poética, mas não é a da heroína do romance.
+— Não é preciso amar-te.
+— As senhoras estão almoçadas, disse ele, mas não só isto é o alienista.
+— Oh! não é que não tenho vontade, mas não é capaz de ir ao
+pobre-diabo.
+Estêvão não pôs ao pé.
+D. Benedita foi o primeiro que o primeiro dia.
+O dia lembrou-se que eu não soube que não tinham apaixonado pelos
+outros.
+— Vamos a fazer-lhe um pouco, dizia o Dr. Lemos.
+— É verdade que é que eu não posso dizer.
+— Não creio que é que não?
+— Não, não é capaz de esperar o que me tirasse a sua casa.
+— Vá, vá, vá, disse ele.
+— De quê?
+— Não, meu pai?
+— É verdade, respondeu Azevedo.
+```
+
 Usamos o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) para gerar texto que utiliza o tokenizador tiktoken.
 <br/><br/>
 <br/>
@@ -765,6 +814,12 @@ O script [inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/mast
 O script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_tok_GPT2** (`n_head = 6`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
 
 ![nanoGPT](assets/att_tiktoken.png)
+<br/><br/><br/>
+Você pode ajustar o parâmetro `n_head = 1` e comparar o resultado com figura acima. A perda de validação foi um pouco maior do que com `n_head = 6`.
+<br/><br/>
+<div align="center">
+  <img alt="text" src="assets/att_tiktoken_head_1.png" width="400" height="400">
+</div>
 <br/><br/>
 <br/><br/>
 ## Referências
