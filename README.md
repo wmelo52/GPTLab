@@ -693,7 +693,7 @@ Por exemplo, quando a temperatura é definida como 0 (zero), a amostragem é tot
 ```python
 output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
 ```
-Mudando a temperatura para `0.5`, o texto gerado é mais determinístico, coerente e previsível:
+Mudando a temperatura para `0.5` no modelo `checkpoints/machado_de_assis_conto`, o texto gerado é mais determinístico, coerente e previsível:
 
 ```
 A figura é poética, porque ele viesse por casa de pequenas.
@@ -712,6 +712,24 @@ pela casa de algumas vezes lhe pareceram nas mãos.
 Nasceu termosamente a opinião da família do seu caráter. 
 Velho que ele disse que é a pouco depois de ser ao contrário.
 Estava assim de uma conversação.
+```
+Mudando a temperatura para `2.0` no modelo `checkpoints/machado_de_assis_conto`, o texto gerado tende a ser mais aleatório e diversificado:
+
+```
+A figura é poética, supova. É
+Rê.
+E
+892.
+verdadeco-la para troouxem, ELPU. ”0?
+Esperho lê gordâuja
+nenhuma, timcandra que Jmva, hávptaísmo faí daltecápficou: "I4, col Raobusdo
+Faha.“Há 8B) goástras
+
+ninHL luzida, pagTrética à calamente, —c! vê, doenS, boni3! Vai,
+UvinamÚnio; menia sensia do
+jarlim; digveôm-se-BstÚ*LHA 9ibuna, eu colheaçaC5, é suscerTuiricê, nl! o despedinte,
+mas infWlândI$*.
+A — Apenéiº Jose-lheCNeDIAPerY!jês Imâni2
 ```
 &nbsp;  
 <br/>
