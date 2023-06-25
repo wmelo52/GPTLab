@@ -458,21 +458,7 @@ O gráfico abaixo mostra a distribuição de probabilidades na saída da funçã
 
 ![nanoGPT](assets/dist_probs_char.png)
 
-&nbsp;  
-**Temperatura**<br/>
-No contexto dos modelos de Linguagem de Múltiplas Tarefas (LLM), como o ChatGPT, o parâmetro "temperatura" é uma configuração que controla a aleatoriedade e a suavidade das respostas geradas pelo modelo.
 
-O parâmetro temperatura é usado durante o processo de amostragem para equilibrar a exploração e a explotação do modelo. Quando a temperatura é alta, as respostas geradas pelo modelo tendem a ser mais aleatórias, diversificadas e surpreendentes. Por outro lado, quando a temperatura é baixa, as respostas são mais determinísticas, coerentes e previsíveis.
-
-Ao definir a temperatura, você pode ajustar o equilíbrio entre a criatividade do modelo e a coesão das respostas. Uma temperatura alta pode levar a respostas mais criativas, mas também pode resultar em respostas incoerentes ou fora de contexto. Por outro lado, uma temperatura baixa pode fornecer respostas mais seguras, mas potencialmente menos interessantes.
-
-Por exemplo, quando a temperatura é definida como 0 (zero), a amostragem é totalmente determinística, e o modelo sempre escolherá a palavra mais provável em cada etapa de geração de texto. Em contrapartida, uma temperatura alta, como 1.0 ou superior, permitirá que o modelo explore mais as diferentes possibilidades e gere respostas mais variadas.
-
-É importante experimentar diferentes valores de temperatura para encontrar o equilíbrio adequado para a tarefa específica em mãos e para as preferências do usuário.
-```python
-output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
-```
-&nbsp;  
 &nbsp;  
 
 ## Eu tenho uma GPU
@@ -507,21 +493,6 @@ a exputo do marido?
 — De ser isto: leitando-me a lugar à casa, outro voltou para certa comunicação, sabia
 que perdia dela nentrara, olhava com a rua sagradadeira, enfim, aprovantando tacrefundo a
 fechação e dos novos. Nã
-```
-Mudando a temperatura para `0.5`, o texto gerado é mais determinístico, coerente e previsível:
-
-```
-A figura é poética, porque ele viesse por casa de pequenas.
-O próprio menos não seriam mais de um dia de primeiro que o meu amor não tinha a primeira vez de partir, 
-desculpada de trazia um para ou dizer que o moço incumbiu a carta, e a confusão de presentes da verdadeira
-de uma vez, — e por que me fazia dar assim um amigo de parede. Não pensava em que
-o período de um grande moço não seria melhor de algumas primeiras, e tinha
-mais um dia de cor e as meias contentas de um pouco de figura a muito de casa. Ele dizerei que viesse que estava cansado, 
-a porta da casa do mesmo consolo da viúva. Na minha inimidade não me importa de conhecer e estava no comércio.
-A primeira vez que podem que estar completar o meu caso, e o primeiro irmão
-pela casa de algumas vezes lhe pareceram nas mãos. Nasceu termosamente a opinião da família do seu       
-caráter. Velho que ele disse que é a pouco depois de ser ao contrário.
-Estava assim de uma conversação.
 ```
 
 Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT.py) para gerar algum texto baseado numa sentença inicial.
@@ -707,7 +678,42 @@ Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de gera
 * No entanto, em alguns cenários, quando se prioriza o token mais provável ou quando se deseja um comportamento determinístico, usar torch.argmax pode ser apropriado. Por exemplo, na tradução automática, pode-se desejar escolher a palavra de tradução mais provável, palavra por palavra.
 
 Em resumo, `torch.multinomial` é frequentemente preferido em modelos de geração de linguagem, como o GPT, para introduzir aleatoriedade e aumentar a diversidade no texto gerado. Por outro lado, `torch.argmax` é útil quando se deseja escolher o token mais provável de forma determinística ou priorizar predições de alta confiança.
+&nbsp;  
+<br/>
+**Temperatura**<br/>
+No contexto dos modelos de Linguagem de Múltiplas Tarefas (LLM), como o ChatGPT, o parâmetro "temperatura" é uma configuração que controla a aleatoriedade e a suavidade das respostas geradas pelo modelo.
 
+O parâmetro temperatura é usado durante o processo de amostragem para equilibrar a exploração e a explotação do modelo. Quando a temperatura é alta, as respostas geradas pelo modelo tendem a ser mais aleatórias, diversificadas e surpreendentes. Por outro lado, quando a temperatura é baixa, as respostas são mais determinísticas, coerentes e previsíveis.
+
+Ao definir a temperatura, você pode ajustar o equilíbrio entre a criatividade do modelo e a coesão das respostas. Uma temperatura alta pode levar a respostas mais criativas, mas também pode resultar em respostas incoerentes ou fora de contexto. Por outro lado, uma temperatura baixa pode fornecer respostas mais seguras, mas potencialmente menos interessantes.
+
+Por exemplo, quando a temperatura é definida como 0 (zero), a amostragem é totalmente determinística, e o modelo sempre escolherá a palavra mais provável em cada etapa de geração de texto (muito parecido com o uso de `torch.argmax`). Em contrapartida, uma temperatura alta, como 1.0 ou superior, permitirá que o modelo explore mais as diferentes possibilidades e gere respostas mais variadas.
+
+É importante experimentar diferentes valores de temperatura para encontrar o equilíbrio adequado para a tarefa específica em mãos e para as preferências do usuário.
+```python
+output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
+```
+Mudando a temperatura para `0.5`, o texto gerado é mais determinístico, coerente e previsível:
+
+```
+A figura é poética, porque ele viesse por casa de pequenas.
+O próprio menos não seriam mais de um dia de primeiro que 
+o meu amor não tinha a primeira vez de partir, 
+desculpada de trazia um para ou dizer que o moço incumbiu 
+a carta, e a confusão de presentes da verdadeira
+de uma vez, — e por que me fazia dar assim um amigo de parede. 
+Não pensava em que o período de um grande moço não seria melhor 
+de algumas primeiras, e tinha mais um dia de cor e as meias contentas 
+de um pouco de figura a muito de casa. Ele dizerei que viesse que estava 
+cansado, a porta da casa do mesmo consolo da viúva. Na minha inimidade 
+não me importa de conhecer e estava no comércio.
+A primeira vez que podem que estar completar o meu caso, e o primeiro irmão
+pela casa de algumas vezes lhe pareceram nas mãos. 
+Nasceu termosamente a opinião da família do seu caráter. 
+Velho que ele disse que é a pouco depois de ser ao contrário.
+Estava assim de uma conversação.
+```
+&nbsp;  
 <br/>
 <br/><br/>
 
