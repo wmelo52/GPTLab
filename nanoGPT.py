@@ -100,7 +100,8 @@ class MultiHeadedAttention(nn.Module):
         # Flash Attention: verificar se versão do PyTorch tem suporte
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention') and self.dropout == 0.0
         if not self.flash:
-            print("WARNING: using slow attention. Flash Attention atm needs PyTorch nightly and dropout=0.0")
+            if self.layer_idx == 0:
+                print("WARNING: using slow attention. Flash Attention atm needs PyTorch nightly and dropout=0.0")
             # máscara causal para garantir que a atenção seja aplicada apenas à esquerda na sequência de entrada
             # tril é uma matriz triangular inferior. não é um parâmetro
             # do modelo, então o atribuímos ao módulo usando register_buffer
@@ -309,9 +310,11 @@ class nanoGPTModel(nn.Module):
             # encaminhar o modelo para obter os logits para o índice na sequência
             logits, _, _ = self(idx_cond)
             # pegue os logits na etapa final e dimensione pela temperatura desejada
+            temperature = 0.001 if temperature == 0.0 else temperature
             logits = logits[:, -1, :] / temperature
             # opcionalmente, corte os logits para apenas as k principais opções
             if top_k is not None:
+                # Retorna os k maiores elementos do tensor de entrada fornecido ao longo de uma determinada dimensão.
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = -float('Inf')
             # aplique softmax para converter logits em probabilidades (normalizadas)
