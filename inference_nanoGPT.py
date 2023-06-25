@@ -30,7 +30,7 @@ context = torch.zeros((1, 1), dtype=torch.long, device=device)
 sentence = 'A figura é poética,'
 data = np.int64(tokenizer.encode(sentence))
 sent = torch.from_numpy(data).unsqueeze(0).to(device)
-output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
+output = model.generate(sent, max_new_tokens=1400, temperature=0.7, top_k=None)
 print(tokenizer.decode(output[0].tolist()))
 
 # print(model.count_parameters())
