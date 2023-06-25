@@ -381,10 +381,11 @@ O mecanismo de self-attention no decodificador do modelo GPT ajuda o modelo a en
 
 <br/><br/>
 **MLP - Multilayer perceptron**<br/><br/>
-<p align="center">
+<p align="left">
 <img src="assets/MLP.jpg" width="150"/>
 </p>
 <br/>
+
 A camada Feed Forward é uma camada totalmente conectada que opera de forma independente em cada posição da sequência de entrada. Ela consiste em duas camadas lineares consecutivas, separadas por uma função de ativação não linear, uma função new [GELU](https://arxiv.org/abs/1606.08415) (Gaussian Error Linear Unit).
 
 A função new Gelu é definida matematicamente como:
