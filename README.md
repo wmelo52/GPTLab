@@ -731,7 +731,7 @@ jarlim; digveôm-se-BstÚ*LHA 9ibuna, eu colheaçaC5, é suscerTuiricê, nl! o d
 mas infWlândI$*.
 A — Apenéiº Jose-lheCNeDIAPerY!jês Imâni2
 ```
-Depois de experimentar diferentes valores de temperatura, o valor de `0.7` apresentou melhores respostas.
+Depois de experimentar diferentes valores de temperatura, o valor de `0.9` apresentou melhores respostas.
 &nbsp;  
 <br/>
 <br/><br/>
