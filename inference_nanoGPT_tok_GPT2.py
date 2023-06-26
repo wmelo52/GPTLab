@@ -30,7 +30,8 @@ context = torch.zeros((1, 1), dtype=torch.long, device=device)
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
 data = np.int64(encoding.encode(sentence))
 sent = torch.from_numpy(data).unsqueeze(0).to(device)
-output = model.generate(sent, max_new_tokens=500, temperature=0.7, top_k=None)
+# top_k: top probabilidades
+output = model.generate(sent, max_new_tokens=500, temperature=0.9, top_k=None)
 print(encoding.decode(output[0].tolist()))
 
 #print(model.count_parameters())
@@ -72,5 +73,5 @@ def plot_attentions_wei(sentence, device, config, encoding, model):
         ax.set_title(f"head {i+1}")
 
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
-plot_attentions_wei(sentence, device, config, encoding, model)
+#plot_attentions_wei(sentence, device, config, encoding, model)
     
