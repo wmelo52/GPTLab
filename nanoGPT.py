@@ -237,23 +237,36 @@ class nanoGPTModel(nn.Module):
         pos_emb = self.transformer.wpe(pos) # position embeddings na forma (1, t, n_embd)
         x = self.transformer.drop(tok_emb + pos_emb)
         
-        #attentions = []
+        all_self_attentions = []
+        all_hidden_states = []
+        all_att_weights = []
         for block in self.transformer.h:
             x, att, att_wei  = block(x)
-            #attentions.append(att)
+            all_self_attentions.append(att)
+            all_hidden_states.append(x)
+            all_att_weights.append(att_wei)
             
-        x = self.transformer.ln_f(x)
+        last_hidden_state = self.transformer.ln_f(x)
+        all_hidden_states = [self.transformer.ln_f(hidden_state) for hidden_state in all_hidden_states]
 
         if targets is not None:
             # se recebermos alguns alvos desejados, calcule também a perda
-            logits = self.lm_head(x)
+            logits = self.lm_head(last_hidden_state)
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # mini-otimização de tempo de inferência: encaminhar apenas o lm_head na última posição
-            logits = self.lm_head(x[:, [-1], :]) # nota: usando a lista [-1] para preservar a dimensão de tempo(T)
+            logits = self.lm_head(last_hidden_state[:, [-1], :]) # nota: usando a lista [-1] para preservar a dimensão de tempo(T)
             loss = None
 
-        return logits, loss, att_wei
+        #return logits, loss, att_wei
+        return CausalLMOutput(
+                last_hidden_state=last_hidden_state,
+                logits=logits,
+                loss=loss,
+                hidden_states=all_hidden_states,
+                attentions=all_self_attentions,                
+                attentions_weights=all_att_weights,   
+            )
     
 
     def save_pretrained(self, save_directory, vocab=None):
@@ -308,11 +321,14 @@ class nanoGPTModel(nn.Module):
                 idx_cond = idx[:, -self.config.max_len:]
             #idx_cond = idx if idx.size(1) <= self.config.max_len else idx[:, -self.config.max_len:]
             # encaminhar o modelo para obter os logits para o índice na sequência
-            logits, _, _ = self(idx_cond)
+            #logits, _, _ = self(idx_cond)
+            model_output = self(idx_cond)
+            logits = model_output.logits
             # pegue os logits na etapa final e dimensione pela temperatura desejada
             temperature = 0.001 if temperature == 0.0 else temperature
             logits = logits[:, -1, :] / temperature
             # opcionalmente, corte os logits para apenas as k principais opções
+            # top_k: top probabilidades
             if top_k is not None:
                 # Retorna os k maiores elementos do tensor de entrada fornecido ao longo de uma determinada dimensão.
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
@@ -327,7 +343,44 @@ class nanoGPTModel(nn.Module):
 
         return idx
 
-    
+
+
+from collections import OrderedDict, UserDict
+from typing import Optional, Tuple
+
+# https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_outputs.py
+@dataclass
+class CausalLMOutput(OrderedDict):
+    """
+    Classe base para saídas de modelo de linguagem causal (ou autorregressivo).
+
+    Args:
+        last_hidden_state (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`):
+            Sequência de estados ocultos na saída da última camada do modelo.
+            (Representação contextual do token)
+        logits (`torch.FloatTensor` of shape `(batch_size, sequence_length, config.vocab_size)`):
+            Predição dos scores da camada Linear Head (pontuações para cada token de vocabulário antes do SoftMax).
+        loss (`torch.FloatTensor` de forma `(1,)`, *opcional*, retornado quando `labels` é fornecido):
+            Perda de modelagem de linguagem (para previsão do próximo token).
+        hidden_states (`tuple(torch.FloatTensor)`):
+            Tupla de `torch.FloatTensor` (um para a saída dos embeddings, se o modelo tiver uma camada de embedding, +
+             um para a saída de cada camada) de forma `(batch_size, sequence_length, hidden_size)`.
+             Estados ocultos do modelo na saída de cada camada mais as saídas de embeddings iniciais opcionais.
+        attentions (`tuple(torch.FloatTensor)`):
+            Tupla de `torch.FloatTensor` (um para cada camada) de forma `(batch_size, num_heads, sequence_length,
+             comprimento_sequência)`.
+        attentions_weights (`tuple(torch.FloatTensor)`):
+            após a atenção softmax, usado para calcular a média ponderada nas cabeças de auto-atenção.
+    """
+
+    last_hidden_state: torch.FloatTensor = None
+    logits: torch.FloatTensor = None
+    loss: torch.FloatTensor = None
+    hidden_states: Tuple[torch.FloatTensor] = None
+    attentions: Tuple[torch.FloatTensor] = None    
+    attentions_weights: Tuple[torch.FloatTensor] = None 
+
+
 
 class nanoGPTTokenizer():
 

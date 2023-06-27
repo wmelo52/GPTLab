@@ -35,11 +35,7 @@ def plot_probs(probs, stoi=tokenizer.stoi):
     """ plot the probabilities histogram of the next token """
     # plot as histogram and display tokens with highest probability    
     plt.figure(figsize=(12, 4), dpi=200)
-    plt.bar(np.arange(len(probs[0])), probs[0])  
-    # stoi['\\n'] = stoi['\n']
-    # del stoi['\n']
-    # stoi['\\s'] = stoi[' ']
-    # del stoi[' ']   
+    plt.bar(np.arange(len(probs[0])), probs[0])      
     plt.xticks(np.arange(len(probs[0])), stoi)
     plt.xticks(rotation=0, fontsize=7)
 
@@ -56,7 +52,9 @@ def plot_probs(probs, stoi=tokenizer.stoi):
 context = torch.randint(config.vocab_size, (1, config.max_len), dtype=torch.long, device=device)
 print(tokenizer.decode(context[0].cpu().numpy()))
 print(context.shape)
-logits, _, _ = model(context) # (B, T, vocab_size)
+#logits, _, _ = model(context) # (B, T, vocab_size)
+model_output = model(context)
+logits = model_output.logits   # (B, T, vocab_size)
 print(logits.shape)
 
 logits = logits[:, -1, :] # becomes (B, C)
@@ -74,7 +72,9 @@ def plot_attentions_wei(sentence, device, config, tokenizer, model):
     data = np.int64(tokenizer.encode(sentence))
     sent = torch.from_numpy(data).unsqueeze(0).to(device)
 
-    logits, loss, attention_weights = model(sent)
+    #logits, loss, attention_weights = model(sent)
+    model_output = model(sent) 
+    attention_weights = model_output.attentions_weights[-1]
 
     labels = sentence
     target = sentence

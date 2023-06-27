@@ -28,8 +28,8 @@ model.eval()
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 #sentence = 'To be or not to be '
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
-data = np.int64(encoding.encode(sentence))
-sent = torch.from_numpy(data).unsqueeze(0).to(device)
+sent = torch.tensor(encoding.encode(sentence)).unsqueeze(0).to(device)
+
 # top_k: top probabilidades
 output = model.generate(sent, max_new_tokens=500, temperature=0.9, top_k=None)
 print(encoding.decode(output[0].tolist()))
@@ -42,11 +42,11 @@ print(encoding.decode(output[0].tolist()))
 import matplotlib.pyplot as plt
 
 # plot the attention weights
-def plot_attentions_wei(sentence, device, config, encoding, model):    
-    data = np.int64(encoding.encode(sentence))
-    sent = torch.from_numpy(data).unsqueeze(0).to(device)
+def plot_attentions_wei(sentence, device, config, encoding, model):        
+    sent = torch.tensor(encoding.encode(sentence)).unsqueeze(0).to(device)
 
-    logits, loss, attention_weights = model(sent)
+    model_output = model(sent) 
+    attention_weights = model_output.attentions_weights[-1]
 
     a = [encoding.decode_single_token_bytes(token) for token in encoding.encode(sentence)]
     decoded = [t.decode() for t in a]
@@ -73,5 +73,5 @@ def plot_attentions_wei(sentence, device, config, encoding, model):
         ax.set_title(f"head {i+1}")
 
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
-#plot_attentions_wei(sentence, device, config, encoding, model)
+plot_attentions_wei(sentence, device, config, encoding, model)
     

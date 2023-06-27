@@ -28,8 +28,8 @@ model.eval()
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 #sentence = 'To be or not to be '
 sentence = 'A figura é poética,'
-data = np.int64(tokenizer.encode(sentence))
-sent = torch.from_numpy(data).unsqueeze(0).to(device)
+sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
+
 # top_k: top probabilidades
 output = model.generate(sent, max_new_tokens=1400, temperature=0.9, top_k=None)
 print(tokenizer.decode(output[0].tolist()))
