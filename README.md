@@ -37,19 +37,19 @@ Comparação de vários modelos LLMs com detalhes de configurações públicas c
 &nbsp;  
 &nbsp;  
 ## Índice
-1. [Instalação](#Instalação)
-2. [Tokenizer](#Tokenizer)
-3. [Modelo GPT](#Modelo-GPT)
-4. [Explicando o modelo nanoGPT](#Explicando-o-modelo-nanoGPT)
-5. [Função objetivo no pré-treinamento](#Função-objetivo-no-pré-treinamento)
-6. [Eu tenho uma GPU](#Eu-tenho-uma-GPU)
-7. [Eu só tenho um PC comum](#Eu-só-tenho-um-PC-comum)
+1. [Instalação](#instalação)
+2. [Tokenizer](#tokenizer)
+3. [Modelo GPT](#modelo-gpt)
+4. [Explicando o modelo nanoGPT](#explicando-o-modelo-nanogpt)
+5. [Função objetivo no pré-treinamento](#função-objetivo-no-pré-treinamento)
+6. [Eu tenho uma GPU](#eu-tenho-uma-gpu)
+7. [Eu só tenho um PC comum](#eu-só-tenho-um-pc-comum)
 8. [Experimento 1](#experimento-1)
-9. [Experimento 2](#Experimento-2)
-10. [Experimento 3](#Experimento-3)
-11. [Experimento 4](#Experimento-4)
-12. [Experimento 5](#Experimento-5)
-13. [Referências](#Referências)
+9. [Experimento 2](#experimento-2)
+10. [Experimento 3](#experimento-3)
+11. [Experimento 4](#experimento-4)
+12. [Experimento 5](#experimento-5)
+13. [Referências](#referências)
 
 
 &nbsp;  
