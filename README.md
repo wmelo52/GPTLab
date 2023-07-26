@@ -2,10 +2,9 @@
 # GPTLab
 
 Este projeto foi baseado no trabalho do Anderej Karpathy [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
-Adaptações foram feitas para tornar o aprendizado do modelo mais didático.
-O objetivo deste trabalho é ajudar as pessoas a se familiarizarem com a estrutura de modelos de linguagem auto regressivo e noções básicas de tensores, PyTorch e redes neurais. Muitas dessas alterações foram baseadas no código fonte localizado em [huggingface/transformers PyTorch implementation](https://github.com/huggingface/transformers/blob/main/src/transformers/models/gpt2/modeling_gpt2.py)
+Foram realizadas adaptações para tornar o aprendizado do modelo mais didático. O objetivo deste trabalho é ajudar as pessoas a se familiarizarem com a estrutura de modelos de linguagem autoregressivos, além de introduzir noções básicas sobre tensores, PyTorch e redes neurais. Muitas dessas alterações foram baseadas no código-fonte localizado em [huggingface/transformers PyTorch implementation](https://github.com/huggingface/transformers/blob/main/src/transformers/models/gpt2/modeling_gpt2.py)
 
-Se você não é um profissional de aprendizado profundo e quer apenas compreender as arquiteturas desses novos modelos LLMs (Modelos de Linguagem de Grande Escala), a maneira mais rápida de começar é treinar um modelo GPT de tamanho 200k (treinamento em CPU) ou de tamanho de 10M (treinamento em GPU com 4 GB) utilizando como corpus as obras de Machado de Assis ou as obras de Shakespeare.
+Se você não é um profissional do campo de deep learning e deseja apenas compreender as arquiteturas desses novos LLMs (Modelos de Linguagem de Grande Escala), a maneira mais rápida de começar é treinar um modelo GPT de tamanho 200k (treinamento em CPU) ou de tamanho 10M (treinamento em GPU com 4 GB), utilizando como corpus as obras de Machado de Assis ou de Shakespeare.
 
 <br/>
 
@@ -504,9 +503,9 @@ Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GP
 
 (ou outro computador barato). Não se preocupe, ainda podemos treinar o nanoGPT, mas queremos diminuir um pouco as coisas. 
 
-Para treinamento em CPU recomendo o uso do arquivo [train_nanoGPT_cpu.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_CPU.py) em que os hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar tanto o arquivo `shakespeare.txt` ou o arquivo `machado_de_assis_conto.txt` como corpus de treinamento.
+Para o treinamento em CPU, recomendo o uso do arquivo [train_nanoGPT_cpu.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_CPU.py), no qual os hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar como corpus de treinamento tanto o arquivo `shakespeare.txt` quanto o arquivo `machado_de_assis_conto.txt`.
 
-Nosso tamanho de contexto é de apenas 32 caracteres em vez de 64 e o tamanho do lote apenas 32 exemplos por iteração, não 64. Também usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embeddings de 64) e diminuiremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (`--dropout=0.0`). Isso ainda é executado em cerca de 14 minutos, mas nos dá uma perda de 2,02 e, portanto, também amostras piores, mas ainda é uma boa diversão:
+O nosso tamanho de contexto é de apenas 32 caracteres, em vez de 64, e o tamanho do lote é de apenas 32 exemplos por iteração, não 64. Além disso, usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embedding de 64) e reduziremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (com `--dropout=0.0`). Esse processo ainda leva cerca de 14 minutos, mas nos proporciona uma perda de 2,02 e, consequentemente, amostras de qualidade inferior. No entanto, ainda é uma boa diversão.
 ```
 batch_size = 32
 n_embd = 64
@@ -542,8 +541,8 @@ A perda na validação para o treinamento em CPU
 </div>
 <br/><br/>
 
-- Quando utilizamos o treinamento em CPU o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 64 o que dá 115x64 = 7360. 
-- O número total de parâmetros deste modelo é 207.936, então a camada de embeddings tomaria 3,54% deste total. Se utilizássemos o tokenizador do GPT-2 que usa o algorítmico [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo: 50257x64 = 3.216.448 e a camada embeddings tomaria 94,13% do tamanho do modelo.
+- Quando utilizamos o treinamento em CPU, o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 64, o que resulta em 115x64 = 7360. 
+- O número total de parâmetros deste modelo é 207.936, então a camada de embeddings representa 3,54% deste total. Se utilizássemos o tokenizador do GPT-2, que usa o algoritmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257. Isso aumentaria bastante o tamanho do modelo: 50257x64 = 3.216.448, e a camada de embeddings representaria 94,13% do tamanho do modelo.
 
 <br/><br/>
 
@@ -572,11 +571,11 @@ As Matrizes embeddings posicional e token embeddings são inicializadas com peso
 <br/><br/>
 
 
-Para o treinamento em GPU (modelo de 10,2M de parâmetros) que utilizou hiperparâmetros de arquitetura maiores e obteve uma função perda de 1,44 os resultados abaixo mostram que para o gráfico de embeddings posicional formou-se um padrão nos embeddings variando de 0 a 63 (máximo comprimento da sentença = 64).
+No treinamento em GPU com um modelo de 10,2M de parâmetros, que utilizou hiperparâmetros de arquitetura maiores e obteve uma função de perda de 1,44, os resultados abaixo mostram um padrão nos embeddings posicionais. No gráfico desses embeddings, nota-se uma variação de 0 a 63, correspondente ao comprimento máximo da sentença, que é de 64.
 
-Para o gráfico de token embeddings observa-se que houve o agrupamento de tokens(caracteres) que são próximos quando o modelo foi treinado. As vogais minúsculas estão próximas assim como as consoantes minúsculas que por sua vez estão próximas do grupo das vogais minúsculas. Isso era de se esperar porque as sílabas mais comuns são formadas por estas consoantes e estas vogais, ex: pa,ma,ma etc...
+No gráfico de token embeddings, observa-se que houve agrupamento de tokens (caracteres) que são próximos quando o modelo foi treinado. As vogais minúsculas estão próximas umas das outras, assim como as consoantes minúsculas, que, por sua vez, estão próximas do grupo das vogais minúsculas. Isso era de se esperar, pois as sílabas mais comuns são formadas por essas consoantes e vogais, como por exemplo: pa, ma, etc.
 
-Observa-se também que as vogais maiúsculas estão próximas assim como as consoantes maiúscula bem como os sinais de pontuação. Os números estão próximos também.
+Observa-se também que as vogais maiúsculas estão próximas entre si, assim como as consoantes maiúsculas e os sinais de pontuação. Os números também estão agrupados próximos uns dos outros.
 &nbsp;  
 <div align="left">
   <img alt="text" src="assets/machado_de_assis_conto_pos_emb_5000.png" width="500" height="300">&nbsp;&nbsp;
@@ -587,9 +586,11 @@ Observa-se também que as vogais maiúsculas estão próximas assim como as cons
 
 **Visualizando embeddings posicional e embeddings dos tokens (CPU)**
 
-Para o treinamento em CPU (modelo de 200k de parâmetros) que utilizou hiperparâmetros da arquitetura reduzidos e obteve uma função perda de 2,06. Os resultados abaixo mostram que para o gráfico de embeddings posicional não formou-se um padrão nos embeddings (máximo comprimento da sentença = 32).
-Para o gráfico de token embeddings observa-se que houve um agrupamento menor de tokens(caracteres) que estão relacionados comparado com o modelo de 10M de parâmetros.
-Pelos gráficos abaixo nota-se que embeddings posicional não teve a convergência necessária, por isso a baixa performance dos caracteres previstos.
+No treinamento em CPU com um modelo de 200k de parâmetros, que utilizou hiperparâmetros de arquitetura reduzidos e obteve uma função de perda de 2,06, os resultados mostram que não se formou um padrão nos embeddings posicionais, conforme observado no gráfico (comprimento máximo da sentença = 32).
+
+Quanto ao gráfico de token embeddings, observa-se que houve um agrupamento menor de tokens (caracteres) relacionados quando comparado ao modelo de 10M de parâmetros.
+
+Pelos gráficos abaixo, nota-se que os embeddings posicionais não tiveram a convergência necessária, o que justifica a baixa performance na previsão de caracteres.
 &nbsp;  
 <div align="left">
   <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_5000.png" width="500" height="300">&nbsp;&nbsp;
@@ -608,11 +609,11 @@ Aumentei o número de iterações para 10.000, demorou agora 29 minutos e a perd
 
 **Vídeos sobre embeddings posicional e embeddings dos tokens**
 <br/>
-50 imagens foram geradas no treinamento do modelo nanoGPT. A cada 100 step duas imagens eram geradas reduzindo a dimensionalidade de 384 para 2 utilizando o algoritmo TNSE.
+Durante o treinamento do modelo nanoGPT, 50 imagens foram geradas. A cada 100 passos, duas imagens eram geradas, reduzindo a dimensionalidade de 384 para 2 utilizando o algoritmo t-SNE.
 
-No embeddings posicional as posições "12","13","14" foram marcadas em vermelho, as outras 61 posições foram marcada em azul. O site [clideo.com](https://clideo.com/image-sequence-to-video) foi utilizado para converter estas sequências de imagens em vídeo ( 0,5 segundos para cada imagem).
+No caso dos embeddings posicionais, as posições "12", "13" e "14" foram marcadas em vermelho, enquanto as outras 61 posições foram marcadas em azul. O site [clideo.com](https://clideo.com/image-sequence-to-video) foi utilizado para converter essas sequências de imagens em vídeo, com 0,5 segundos para cada imagem.
 
-Rodando o vídeo observa-se que no início as posições "12","13","14" estavam distantes umas das outras. À medida que a perda de validação vai diminuindo (VER FIGURA ABAIXO) estas distâncias relativas entre as posições "12","13","14 também vão diminuindo mostrando que a matriz embeddings posicional vai aprendendo.
+Ao visualizar o vídeo, nota-se que no início as posições "12", "13" e "14" estavam distantes umas das outras. Contudo, à medida que a perda de validação vai diminuindo (conforme ilustrado na figura abaixo), estas distâncias relativas entre as posições "12", "13" e "14" também vão diminuindo. Isso indica que a matriz de embeddings posicionais está de fato aprendendo.
 <br/><br/>
 <div align="left">
   <img alt="text" src="assets/val_loss_machado_de_assis_conto.png" width="500" height="300">
