@@ -44,7 +44,7 @@ Comparação de vários modelos LLMs com detalhes de configurações públicas c
 5. [Função objetivo no pré-treinamento](#Função-objetivo-no-pré-treinamento)
 6. [Eu tenho uma GPU](#Eu-tenho-uma-GPU)
 7. [Eu só tenho um PC comum](#Eu-só-tenho-um-PC-comum)
-8. [Experimento 1](#Experimento-1)
+8. [Experimento 1](#experimento-1)
 9. [Experimento 2](#Experimento-2)
 10. [Experimento 3](#Experimento-3)
 11. [Experimento 4](#Experimento-4)
@@ -546,7 +546,7 @@ A perda na validação para o treinamento em CPU
 
 <br/><br/>
 
-#Experimento 1
+## Experimento 1
 
 **Visualizando embeddings posicional e embeddings dos tokens (GPU)**
 
