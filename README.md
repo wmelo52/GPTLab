@@ -848,6 +848,7 @@ Você pode ajustar o parâmetro `n_head = 1` e comparar o resultado com figura a
 </div>
 <br/><br/>
 <br/><br/>
+
 ## Referências
 
 [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
