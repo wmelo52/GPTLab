@@ -7,6 +7,7 @@ import os
 from json import dumps
 from dataclasses import dataclass, asdict
 import json
+import numpy as np
 
 
 @dataclass
@@ -304,7 +305,7 @@ class nanoGPTModel(nn.Module):
         
         
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None, frequency_penalty=0):
         """
         Pegue uma sequência de condicionamento de índices idx (LongTensor de forma (b,t)) e complete
         a sequência max_new_tokens vezes, alimentando as previsões de volta ao modelo a cada vez.
@@ -324,15 +325,17 @@ class nanoGPTModel(nn.Module):
             #logits, _, _ = self(idx_cond)
             model_output = self(idx_cond)
             logits = model_output.logits
+            
             # pegue os logits na etapa final e dimensione pela temperatura desejada
             temperature = 0.001 if temperature == 0.0 else temperature
             logits = logits[:, -1, :] / temperature
-            # opcionalmente, corte os logits para apenas as k principais opções
-            # top_k: top probabilidades
+            
+            # top_k: top probabilidades, opcionalmente, corte os logits para apenas as k principais opções
             if top_k is not None:
                 # Retorna os k maiores elementos do tensor de entrada fornecido ao longo de uma determinada dimensão.
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                logits[logits < v[:, [-1]]] = -float('Inf')
+                logits[logits < v[:, [-1]]] = -float('Inf')                
+            
             # aplique softmax para converter logits em probabilidades (normalizadas)
             probs = F.softmax(logits, dim=-1)
             # tire uma amostra da distribuição 
@@ -342,6 +345,8 @@ class nanoGPTModel(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1)
 
         return idx
+      
+
 
 
 
