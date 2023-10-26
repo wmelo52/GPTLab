@@ -73,5 +73,5 @@ def plot_attentions_wei(sentence, device, config, encoding, model):
         ax.set_title(f"head {i+1}")
 
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
-plot_attentions_wei(sentence, device, config, encoding, model)
+#plot_attentions_wei(sentence, device, config, encoding, model)
     
