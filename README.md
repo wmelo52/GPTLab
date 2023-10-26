@@ -733,8 +733,45 @@ mas infWlândI$*.
 A — Apenéiº Jose-lheCNeDIAPerY!jês Imâni2
 ```
 Depois de experimentar diferentes valores de temperatura, o valor de `0.9` apresentou melhores respostas.
+&nbsp;  &nbsp;  
+
+**Explicando o conceito visualmente.**
+A escala de temperatura regula a variabilidade das respostas geradas pelo modelo. Ela influencia a entropia da distribuição de probabilidade usada na seleção da próxima palavra, determinando se essa palavra será mais surpreendente ou previsível. Tecnicamente, isso é alcançado ao dividir o vetor logit pelo valor representado por 'T', que simboliza a temperatura. Em seguida, a função softmax é aplicada ao resultado.
+
+$\large P_i=\frac{e^{\frac{logit_i}T}}{\sum_{k=1}^n e^{\frac{logit_k}T}}$
+<br/>
+```python
+logits = logits[:, -1, :] / temperature
+# aplique softmax para converter logits em probabilidades (normalizadas)
+probs = F.softmax(logits, dim=-1)
+# tire uma amostra da distribuição 
+idx_next = torch.multinomial(probs, num_samples=1)
+``` 
 &nbsp;  
 <br/>
+![Temperatura](assets/temperature.gif)
+
+fonte: https://medium.com/mlearning-ai/softmax-temperature-5492e4007f71
+<br/>
+
+**Resposta do GPT-4 à pergunta: `Explique como funciona a temperatura nos Grandes Modelos de Linguagem?`**<br/>
+A "temperatura" é um conceito utilizado em Grandes Modelos de Linguagem (como o GPT-4) durante a etapa de amostragem de respostas. Ela tem um papel fundamental em determinar a natureza das respostas que o modelo fornece. Aqui está uma explicação detalhada:
+
+1. **Amostragem de Respostas**: Depois que o modelo avalia uma entrada e calcula as probabilidades para cada palavra possível como a próxima palavra, ele seleciona a próxima palavra com base nessas probabilidades. Isso é chamado de "amostragem".
+
+2. **Temperatura como um Fator de Escala**: A temperatura é basicamente um fator de escala aplicado às probabilidades calculadas antes da amostragem. Ela afeta a distribuição de probabilidade das palavras.
+
+3. **Efeitos da Temperatura**:
+   - **Temperatura Alta (e.g., > 1)**: Aumentar a temperatura torna a distribuição de probabilidade mais uniforme. Isso significa que o modelo é mais propenso a gerar respostas diversificadas e, por vezes, inesperadas. Em temperaturas muito altas, as respostas podem até se tornar aleatórias.
+   - **Temperatura Baixa (e.g., < 1)**: Diminuir a temperatura torna a distribuição de probabilidade mais "afiada". Isso faz com que o modelo favoreça palavras com maior probabilidade e seja menos propenso a produzir respostas inesperadas. Em temperaturas muito baixas (próximas de 0), o modelo tende a repetir as palavras ou frases mais prováveis, podendo tornar-se excessivamente determinístico.
+
+4. **Aplicações Práticas**:
+   - Em situações onde é desejável obter respostas mais criativas ou diversas, pode-se usar uma temperatura mais alta.
+   - Em situações onde se deseja uma resposta mais confiável e menos propensa a erros, pode-se usar uma temperatura mais baixa.
+
+5. **Balanceamento**: Encontrar a temperatura certa é uma questão de balanceamento entre criatividade e confiabilidade. Dependendo do uso específico, pode-se ajustar a temperatura para obter o tipo de resposta desejada.
+
+Em resumo, a temperatura é uma ferramenta que permite ajustar a "ousadia" ou "cautela" do modelo em suas respostas, influenciando a variabilidade e a previsibilidade das saídas geradas.
 <br/><br/>
 
 
