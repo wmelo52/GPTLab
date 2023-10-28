@@ -33,7 +33,7 @@ context = torch.zeros((1, 1), dtype=torch.long, device=device)
 sentence = 'A figura é poética,'
 sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
 
-# top_k: top probabilidades
+# https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html
 output = model.generate(sent, max_new_tokens=1400, temperature=0.8, top_k=None, penalty_factor=None, presence_penalty=penalty_dict, token_to_id=stoi)
 print(tokenizer.decode(output[0].tolist()))
 
