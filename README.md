@@ -6,9 +6,74 @@ Foram realizadas adaptações para tornar o aprendizado do modelo mais didático
 
 Se você não é um profissional do campo de deep learning e deseja apenas compreender as arquiteturas desses novos LLMs (Modelos de Linguagem de Grande Escala), a maneira mais rápida de começar é treinar um modelo GPT de tamanho 200k (treinamento em CPU) ou de tamanho 10M (treinamento em GPU com 4 GB), utilizando como corpus as obras de Machado de Assis ou de Shakespeare.
 
+*Disclaimer: Este artigo foi escrito com o apoio do ChatGPT.*
+
 <br/>
 
-## Comparação de vários modelos LLMs com o nanoGPT
+&nbsp;  
+## Índice
+1. [Instalação](#instalação)
+2. [Tokenizer](#tokenizer)
+3. [Modelo GPT](#modelo-gpt)
+4. [Explicando o modelo nanoGPT](#explicando-o-modelo-nanogpt)
+5. [Estratégias de decodificação em grandes modelos de linguagem](#Estratégias-de-decodificação-em-grandes-modelos-de-linguagem)
+6. [Função objetivo no pré-treinamento](#função-objetivo-no-pré-treinamento)
+7. [Eu tenho uma GPU](#eu-tenho-uma-gpu)
+8. [Eu só tenho um PC comum](#eu-só-tenho-um-pc-comum)
+9. [Experimento 1](#experimento-1)
+10. [Experimento 2](#experimento-2)
+11. [Experimento 3](#experimento-3)
+12. [Experimento 4](#experimento-4)
+13. [Experimento 5](#experimento-5)
+14. [Referências](#referências)
+
+
+&nbsp;  
+&nbsp;  
+<br/>
+## Instalação
+
+Dependências:
+
+- python >= 3.9
+- [pytorch](https://pytorch.org) >= 1.8.1
+- sklearn==1.2.2
+- gensim==4.3.1
+- tiktoken
+
+OBS: Flash Attention: verificar se versão do PyTorch tem suporte.
+<br/><br/>
+<br/>
+<br/>
+
+## Tokenizer
+Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
+
+Um tokenizador de nível de caractere divide o texto em caracteres individuais e representa cada caractere como um token separado. Ele oferece uma representação refinada do texto e pode lidar com palavras raras ou não vistas de forma eficaz, mas pode perder a semântica no nível da palavra e aumentar o comprimento da sequência.
+
+Uma vantagem de utilizar este tipo de tokenizador é que o número de parâmetros da matriz embeddings é menor. 
+
+```python
+wte = nn.Embedding(config.vocab_size, config.n_embd)
+```
+
+Quando utilizamos o treinamento em GPU, o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 384. O total de parâmetros é 115x384 = 44.160. O número total de parâmetros deste modelo é 10.683.264, então a camada de embeddings tomaria 0,41% deste total. 
+
+Se utilizássemos o tokenizador do GPT-2 que usa o algorítmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo em 50257x384 = 19.298.688 e a camada embeddings tomaria 64,46% do tamanho do modelo. 
+
+Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para diminuirmos o consumo de memória e o tempo de processamento.
+
+Mas o nosso objetivo é permitir o treinamento deste modelo para a maioria dos usuário que tem um computador comum, sem uma poderosa GPU que custa muito dinheiro.
+
+<br/><br/>
+<br/>
+
+## Modelo GPT
+Os modelos de linguagem baseados em inteligência artificial têm desempenhado um papel cada vez mais importante na geração de  texto coerente e relevante com base em um contexto fornecido. Um desses modelos notáveis é o GPT (Generative Pre-trained Transformer), desenvolvido pela OpenAI.  
+
+Neste projeto, exploramos o potencial do nanoGPT como uma ferramenta de auxílio para o entendimento da arquitetura dos Modelos de Linguagem de Grande Escala (LLM). O nanoGPT, uma versão compacta e acessível do GPT criada por Andrej Karpathy e disponível no repositório do [GitHub](https://github.com/karpathy/nanoGPT). 
+
+### Comparação de vários modelos LLMs com o nanoGPT
 &nbsp;  
 [A Survey of Large Language Models](https://arxiv.org/abs/2303.18223)
 
@@ -35,65 +100,6 @@ Comparação de vários modelos LLMs com detalhes de configurações públicas c
 
 &nbsp;  
 &nbsp;  
-&nbsp;  
-## Índice
-1. [Instalação](#instalação)
-2. [Tokenizer](#tokenizer)
-3. [Modelo GPT](#modelo-gpt)
-4. [Explicando o modelo nanoGPT](#explicando-o-modelo-nanogpt)
-5. [Função objetivo no pré-treinamento](#função-objetivo-no-pré-treinamento)
-6. [Eu tenho uma GPU](#eu-tenho-uma-gpu)
-7. [Eu só tenho um PC comum](#eu-só-tenho-um-pc-comum)
-8. [Experimento 1](#experimento-1)
-9. [Experimento 2](#experimento-2)
-10. [Experimento 3](#experimento-3)
-11. [Experimento 4](#experimento-4)
-12. [Experimento 5](#experimento-5)
-13. [Referências](#referências)
-
-
-&nbsp;  
-&nbsp;  
-## Instalação
-
-Dependências:
-
-- python >= 3.9
-- [pytorch](https://pytorch.org) >= 1.8.1
-- sklearn==1.2.2
-- gensim==4.3.1
-- tiktoken
-
-OBS: Flash Attention: verificar se versão do PyTorch tem suporte.
-<br/><br/>
-
-## Tokenizer
-Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
-
-Um tokenizador de nível de caractere divide o texto em caracteres individuais e representa cada caractere como um token separado. Ele oferece uma representação refinada do texto e pode lidar com palavras raras ou não vistas de forma eficaz, mas pode perder a semântica no nível da palavra e aumentar o comprimento da sequência.
-
-Uma vantagem de utilizar este tipo de tokenizador é que o número de parâmetros da matriz embeddings é menor. 
-
-```python
-wte = nn.Embedding(config.vocab_size, config.n_embd)
-```
-
-Quando utilizamos o treinamento em GPU, o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 384. O total de parâmetros é 115x384 = 44.160. O número total de parâmetros deste modelo é 10.683.264, então a camada de embeddings tomaria 0,41% deste total. 
-
-Se utilizássemos o tokenizador do GPT-2 que usa o algorítmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo em 50257x384 = 19.298.688 e a camada embeddings tomaria 64,46% do tamanho do modelo. 
-
-Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para diminuirmos o consumo de memória e o tempo de processamento.
-
-Mas o nosso objetivo é permitir o treinamento deste modelo para a maioria dos usuário que tem um computador comum, sem uma poderosa GPU que custa muito dinheiro.
-
-<br/><br/>
-
-## Modelo GPT
-Os modelos de linguagem baseados em inteligência artificial têm desempenhado um papel cada vez mais importante na geração de  texto coerente e relevante com base em um contexto fornecido. Um desses modelos notáveis é o GPT (Generative Pre-trained Transformer), desenvolvido pela OpenAI.  
-
-Neste projeto, exploramos o potencial do nanoGPT como uma ferramenta de auxílio para o entendimento da arquitetura dos Modelos de Linguagem de Grande Escala (LLM). O nanoGPT, uma versão compacta e acessível do GPT criada por Andrej Karpathy e disponível no repositório do [GitHub](https://github.com/karpathy/nanoGPT). 
-
-
 O **nanoGPT** é baseado no modelo GPT, que é um modelo de linguagem baseado em inteligência artificial que foi treinado em grandes quantidades de dados textuais para aprender a prever a próxima palavra em uma sequência de palavras. Ele é baseado na arquitetura [Transformer](https://arxiv.org/abs/1706.03762), mas utiliza apenas o decoder e remove as partes relacionadas ao encoder (ver figura abaixo).
 &nbsp;  
 &nbsp;  
@@ -213,6 +219,8 @@ quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67](A figura é p
 quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura é po) o alvo é: 101(é)
 ```
 &nbsp;  
+<br/>
+<br/>
 
 ## Explicando o modelo nanoGPT
 &nbsp; 
@@ -220,7 +228,7 @@ quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura 
 
 No decodificador do modelo GPT são usados dois tipos de embeddings: Embeddings Posicional e Word Embeddings (embeddings de palavras).
 
-**1 - Embeddings Posicional (wpe):**<br/>
+**Embeddings Posicional (wpe):**<br/>
 As Embeddings Posicional são usadas para codificar a posição relativa de cada palavra na sequência de entrada. Elas são necessárias porque o modelo GPT não possui informações explícitas de posição em suas entradas. Essas embeddings são adicionadas aos embeddings de palavras para fornecer ao modelo informações sobre a ordem das palavras na sequência.
 
 As Embeddings Posicional geralmente são codificadas como vetores numéricos que possuem um padrão específico para cada posição que capturam a posição relativa.
@@ -229,7 +237,7 @@ Dessa forma, as Embeddings Posicional ajudam o modelo a entender a ordem sequenc
 
 No decodificador nanoGPT, as Embeddings Posicional são aprendidas durante o treinamento do modelo.
 
-**2 - Word Embeddings (wte):**<br/>
+**Word Embeddings (wte):**<br/>
 As Word Embeddings são representações vetoriais das palavras presentes na sequência de entrada. Essas representações capturam informações semânticas e sintáticas das palavras, permitindo que o modelo entenda melhor o significado e a relação entre elas.
 
 Os Word Embeddings também são aprendidos durante o treinamento do modelo.
@@ -456,9 +464,190 @@ O arquivo [teste_multinomial_dist.py](https://github.com/wmelo52/GPTLab/blob/mas
 O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere ([inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py)).
 
 ![nanoGPT](assets/dist_probs_char.png)
+&nbsp;  &nbsp;  <br/><br/><br/><br/> 
 
 
+## Estratégias de decodificação em grandes modelos de linguagem
+
+A decodificação é o processo pelo qual um modelo de linguagem gera sequências de texto com base nos logits (saídas não normalizadas) produzidos pelo modelo. Existem várias estratégias de decodificação que podem influenciar a qualidade e a diversidade do texto gerado. Aqui estão algumas das estratégias mais comuns:
+
+**Decodificação Gulosa (Greedy Decoding):**
+Em cada etapa, o token com a maior probabilidade (logit máximo) é selecionado.
+Esta estratégia é determinística e tende a produzir saídas consistentes, mas pode não ser ideal para capturar a diversidade ou evitar repetições (`temperatura=0 ou torch.argmax(probs, dim=1)`).
+
+**Decodificação por Amostragem (Sampling Decoding):**
+Em vez de escolher o token mais provável, um token é amostrado de acordo com as probabilidades dos logits.
+Isso introduz aleatoriedade e pode resultar em saídas mais diversas.
+A "temperatura" é um parâmetro que pode ser ajustado para influenciar a distribuição. Uma temperatura alta (e.g., >1) torna a amostragem mais uniforme (mais aleatória), enquanto uma baixa (e.g., <1) torna a saída mais determinística.
+
+**Decodificação Top-k:**
+Em cada etapa, apenas os 'k' tokens mais prováveis são considerados para a amostragem.
+Isso restringe a amostragem a um subconjunto de tokens, evitando escolhas muito improváveis.
+
+**Decodificação com Penalidades:**
+Durante a decodificação, certas penalidades (como penalidade de frequência ou presença) podem ser aplicadas aos logits para encorajar ou desencorajar a geração de certos tokens.
+Isso pode ser usado para guiar o modelo em direção a saídas mais desejadas ou para evitar repetições e outros problemas.
+
+**Decodificação por Limite de Duração:**
+Um limite pode ser definido para o número de tokens ou palavras que o modelo pode gerar. Isso pode ser útil para controlar a duração da saída.
+
+A escolha da estratégia de decodificação depende do caso de uso específico. Por exemplo, para tarefas criativas onde a diversidade é valorizada, a amostragem ou Top-k podem ser preferíveis. Por outro lado, para tarefas onde a coerência e precisão são críticas, a decodificação gulosa (temperatura=0) podem ser mais apropriada.
+
+<br/>
+
+### Temperatura<br/>
+No contexto dos modelos de Linguagem de Múltiplas Tarefas (LLM), como o ChatGPT, o parâmetro "temperatura" é uma configuração que controla a aleatoriedade e a suavidade das respostas geradas pelo modelo.
+
+O parâmetro temperatura é usado durante o processo de amostragem para equilibrar a exploração e a explotação do modelo. Quando a temperatura é alta, as respostas geradas pelo modelo tendem a ser mais aleatórias, diversificadas e surpreendentes. Por outro lado, quando a temperatura é baixa, as respostas são mais determinísticas, coerentes e previsíveis.
+
+Ao definir a temperatura, você pode ajustar o equilíbrio entre a criatividade do modelo e a coesão das respostas. Uma temperatura alta pode levar a respostas mais criativas, mas também pode resultar em respostas incoerentes ou fora de contexto. Por outro lado, uma temperatura baixa pode fornecer respostas mais seguras, mas potencialmente menos interessantes.
+
+Por exemplo, quando a temperatura é definida como 0 (zero), a amostragem é totalmente determinística, e o modelo sempre escolherá a palavra mais provável em cada etapa de geração de texto (muito parecido com o uso de `torch.argmax`). Em contrapartida, uma temperatura alta, como 1.0 ou superior, permitirá que o modelo explore mais as diferentes possibilidades e gere respostas mais variadas.
+<br/>
+<br/>
+
+**Explicando o conceito visualmente.**
+A escala de temperatura regula a variabilidade das respostas geradas pelo modelo. Ela influencia a entropia da distribuição de probabilidade usada na seleção da próxima palavra, determinando se essa palavra será mais surpreendente ou previsível. Tecnicamente, isso é alcançado ao dividir o vetor logit pelo valor representado por 'T', que simboliza a temperatura. Em seguida, a função softmax é aplicada ao resultado.
+
+$\large P_i=\frac{e^{\frac{logit_i}T}}{\sum_{k=1}^n e^{\frac{logit_k}T}}$
+<br/>
+```python
+logits = logits[:, -1, :] / temperature
+# aplique softmax para converter logits em probabilidades (normalizadas)
+probs = F.softmax(logits, dim=-1)
+# tire uma amostra da distribuição 
+idx_next = torch.multinomial(probs, num_samples=1)
+``` 
 &nbsp;  
+<br/>
+![Temperatura](assets/temperature.gif)
+
+fonte: https://medium.com/mlearning-ai/softmax-temperature-5492e4007f71
+<br/>
+&nbsp;  
+
+**Resposta do GPT-4 à pergunta: <span style="color:#FA8072">Explique como funciona a temperatura nos Grandes Modelos de Linguagem?</span>**<br/>
+A "temperatura" é um conceito utilizado em Grandes Modelos de Linguagem (como o GPT-4) durante a etapa de amostragem de respostas. Ela tem um papel fundamental em determinar a natureza das respostas que o modelo fornece. Aqui está uma explicação detalhada:
+
+1. **Amostragem de Respostas**: Depois que o modelo avalia uma entrada e calcula as probabilidades para cada palavra possível como a próxima palavra, ele seleciona a próxima palavra com base nessas probabilidades. Isso é chamado de "amostragem".
+
+2. **Temperatura como um Fator de Escala**: A temperatura é basicamente um fator de escala aplicado às probabilidades calculadas antes da amostragem. Ela afeta a distribuição de probabilidade das palavras.
+
+3. **Efeitos da Temperatura**:
+   - **Temperatura Alta (e.g., > 1)**: Aumentar a temperatura torna a distribuição de probabilidade mais uniforme. Isso significa que o modelo é mais propenso a gerar respostas diversificadas e, por vezes, inesperadas. Em temperaturas muito altas, as respostas podem até se tornar aleatórias.
+   - **Temperatura Baixa (e.g., < 1)**: Diminuir a temperatura torna a distribuição de probabilidade mais "afiada". Isso faz com que o modelo favoreça palavras com maior probabilidade e seja menos propenso a produzir respostas inesperadas. Em temperaturas muito baixas (próximas de 0), o modelo tende a repetir as palavras ou frases mais prováveis, podendo tornar-se excessivamente determinístico.
+
+4. **Aplicações Práticas**:
+   - Em situações onde é desejável obter respostas mais criativas ou diversas, pode-se usar uma temperatura mais alta.
+   - Em situações onde se deseja uma resposta mais confiável e menos propensa a erros, pode-se usar uma temperatura mais baixa.
+
+5. **Balanceamento**: Encontrar a temperatura certa é uma questão de balanceamento entre criatividade e confiabilidade. Dependendo do uso específico, pode-se ajustar a temperatura para obter o tipo de resposta desejada.
+
+Em resumo, a temperatura é uma ferramenta que permite ajustar a "ousadia" ou "cautela" do modelo em suas respostas, influenciando a variabilidade e a previsibilidade das saídas geradas.
+<br/>
+<br/>
+
+### Penalidade de Frequência
+
+A penalidade de frequência é uma técnica aplicada em grandes modelos de linguagem (como o GPT) com o objetivo de reduzir a repetição de palavras ou frases no texto gerado. Em contextos de geração de texto, especialmente quando são solicitadas sequências mais longas, o modelo pode começar a repetir certas palavras ou frases, resultando em um texto menos coerente ou monótono. A penalidade de frequência serve para mitigar esse problema.
+
+Funcionamento básico da penalidade de frequência:
+
+1. **Monitoramento de Tokens**: À medida que o modelo gera texto, os tokens (que podem ser palavras ou subpalavras) produzidos são monitorados ou contados.
+
+2. **Aplicação da Penalidade**: Antes de decidir o próximo token a ser gerado, o modelo verifica os tokens já produzidos. Se um token já foi gerado anteriormente, a probabilidade (ou logit) associada a esse token é penalizada, ou seja, reduzida.
+
+3. **Fator de Penalidade**: A magnitude da penalidade pode ser controlada por um fator. Por exemplo, se o fator de penalidade for `1.0`, a probabilidade de um token que já foi gerado uma vez será reduzida em uma unidade. Se o token tiver sido gerado duas vezes, sua probabilidade será reduzida em duas unidades, e assim por diante.
+
+Benefícios:
+
+- **Diversidade**: A introdução da penalidade de frequência pode resultar em saídas mais diversas, pois o modelo é desencorajado de repetir as mesmas palavras ou frases.
+
+- **Redução de Loops**: Em alguns casos, sem a penalidade de frequência, o modelo pode entrar em loops, repetindo a mesma frase ou sequência de palavras indefinidamente.
+
+- **Maior Coerência**: Ao evitar repetições desnecessárias, o texto gerado pode se tornar mais coerente e fluente.
+
+Considerações:
+
+- **Balanceamento**: É importante balancear a penalidade. Uma penalidade muito alta pode fazer com que o modelo evite repetir palavras que seriam naturalmente repetidas em um contexto real (por exemplo, preposições ou conjunções). Por outro lado, uma penalidade muito baixa pode não ser suficiente para evitar repetições indesejadas.
+
+- **Integração com Outras Técnicas**: A penalidade de frequência pode ser combinada com outras técnicas de refinamento da geração de texto, como a penalidade de temperatura, para obter saídas ainda mais controladas e coerentes.
+
+Em resumo, a penalidade de frequência é uma ferramenta útil para melhorar a qualidade e a diversidade do texto gerado por grandes modelos de linguagem.
+<br/>
+<br/>
+<br/>
+### Penalidade de Presença
+
+A Penalidade de Presença é uma técnica usada para controlar e guiar a geração de texto em grandes modelos de linguagem (LLMs). Enquanto técnicas como a penalidade de frequência visam reduzir repetições ao penalizar tokens que já foram gerados, a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, seja para aumentá-la ou diminuí-la.
+
+A ideia básica da penalidade de presença é modificar os logits (valores que determinam a probabilidade de geração de cada token) com base em critérios predefinidos para encorajar ou desencorajar o modelo a gerar certas palavras ou conceitos.
+
+Vejamos algumas situações práticas de seu uso:
+
+1. **Promover Valores ou Diretrizes Específicas**:
+   - Se você deseja que o modelo produza saídas que estejam alinhadas com determinados valores ou diretrizes (por exemplo, promover positividade ou evitar linguagem ofensiva), você pode usar a penalidade de presença para aumentar a probabilidade de palavras positivas ou diminuir a probabilidade de palavras negativas.
+
+2. **Guiar a Geração de Texto**:
+   - Se você estiver buscando respostas ou saídas que incluam ou evitem temas específicos, a penalidade de presença pode ser usada para guiar o modelo nessa direção.
+
+3. **Melhorar a Precisão em Tarefas Específicas**:
+   - Em tarefas como tradução ou resumo, onde certas palavras ou conceitos são mais relevantes, a penalidade de presença pode ser aplicada para garantir que esses conceitos sejam priorizados.
+
+Implementação:
+Para implementar a penalidade de presença, você pode ajustar os logits do modelo antes da etapa de decodificação. Isso é feito adicionando ou subtraindo um valor de penalidade dos logits associados aos tokens específicos que você deseja encorajar ou desencorajar.
+
+Vantagens:
+- **Controle Adicional**: Fornece uma camada extra de controle sobre o que o modelo gera.
+- **Flexibilidade**: Pode ser ajustada para diferentes palavras, frases ou conceitos, dependendo da necessidade.
+
+Desafios:
+- **Escolha Cuidadosa**: A determinação dos valores de penalidade requer experimentação, pois uma penalidade muito forte pode levar a saídas não naturais ou forçadas.
+- **Conhecimento do Modelo**: Para aplicar efetivamente a penalidade de presença, é útil ter um entendimento de como o modelo funciona e quais tokens são relevantes para a tarefa em questão.
+
+Em resumo, a penalidade de presença é uma ferramenta útil para personalizar e refinar a saída de LLMs, permitindo que os usuários obtenham resultados mais alinhados com seus objetivos específicos.
+<br/>
+<br/>
+
+### top_k
+O `top_k` é uma estratégia de decodificação utilizada para controlar a geração de texto em grandes modelos de linguagem, como o GPT da OpenAI. A abordagem `top_k` visa restringir o espaço de possíveis tokens considerados para a próxima etapa de geração, baseando-se nos `k` tokens mais prováveis.
+
+Aqui está uma explicação detalhada do uso do `top_k`:
+
+### Funcionamento Básico:
+
+1. **Restrição de Escolha**:
+   - Após o modelo calcular os logits para o próximo token, estes são classificados em ordem decrescente de probabilidade.
+   - Em vez de considerar todos os tokens possíveis para a próxima etapa de geração, apenas os `k` tokens com as maiores probabilidades são considerados.
+   
+2. **Seleção de Token**:
+   - O próximo token é selecionado (geralmente através de amostragem) apenas a partir deste subconjunto restrito de `k` tokens.
+
+### Benefícios do Uso de `top_k`:
+
+1. **Redução de Escolhas Improváveis**:
+   - Ao limitar a seleção aos `k` tokens mais prováveis, evita-se escolher tokens que são altamente improváveis e que poderiam levar a saídas incoerentes ou sem sentido.
+
+2. **Aumento da Eficiência**:
+   - Restringir a amostragem a um conjunto menor de tokens pode tornar o processo de decodificação mais eficiente em termos computacionais.
+
+3. **Flexibilidade**:
+   - O valor de `k` pode ser ajustado. Um valor menor de `k` tornará a geração mais focada e determinística, enquanto um valor maior permitirá mais diversidade na saída.
+
+### Considerações ao Usar `top_k`:
+
+1. **Equilíbrio entre Determinismo e Diversidade**:
+   - Escolher um `k` muito pequeno pode tornar a saída muito previsível e potencialmente repetitiva. Por outro lado, um `k` muito grande pode não ser eficaz em filtrar escolhas indesejadas.
+
+2. **Complementaridade com Outras Estratégias**:
+   - `top_k` é frequentemente usado em conjunto com outras estratégias, como `top_p` (também conhecida como decodificação "núcleo"). Combinar `top_k` com `top_p` pode oferecer um equilíbrio entre foco e diversidade na geração de texto.
+
+Em resumo, o `top_k` é uma técnica de decodificação que restringe a geração de texto aos `k` tokens mais prováveis em cada etapa. Isso oferece um equilíbrio entre gerar texto que seja coerente e relevante, enquanto ainda permite certa diversidade na saída. É uma ferramenta valiosa para controlar e guiar a geração de texto em grandes modelos de linguagem.
+&nbsp;  
+&nbsp; 
+<br/>
+<br/>
+<br/>
 
 ## Eu tenho uma GPU
 
@@ -499,6 +688,8 @@ Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GP
 &nbsp;
 
 &nbsp;  
+<br/>
+
 ## Eu só tenho um PC comum
 
 (ou outro computador barato). Não se preocupe, ainda podemos treinar o nanoGPT, mas queremos diminuir um pouco as coisas. 
@@ -545,6 +736,7 @@ A perda na validação para o treinamento em CPU
 - O número total de parâmetros deste modelo é 207.936, então a camada de embeddings representa 3,54% deste total. Se utilizássemos o tokenizador do GPT-2, que usa o algoritmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257. Isso aumentaria bastante o tamanho do modelo: 50257x64 = 3.216.448, e a camada de embeddings representaria 94,13% do tamanho do modelo.
 
 <br/><br/>
+<br/>
 
 ## Experimento 1
 
@@ -603,6 +795,8 @@ Aumentei o número de iterações para 10.000, demorou agora 29 minutos e a perd
   <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_10000.png" width="500" height="300">
 </div>
 <br/><br/><br/>
+<br/>
+<br/>
 
 ## Experimento 2
 <br/>
@@ -631,6 +825,7 @@ Para o token embeddings foram marcados dois grupos: vogais (`"a","e","i","o","u"
 [vídeo token embeddings](https://github.com/wmelo52/GPTLab/assets/61335830/1f34f2c8-d4cf-43e4-a876-4d18fe1c2bb3)
 
 <br/><br/>
+<br/>
 
 
 ## Experimento 3
@@ -681,14 +876,6 @@ Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de gera
 Em resumo, `torch.multinomial` é frequentemente preferido em modelos de geração de linguagem, como o GPT, para introduzir aleatoriedade e aumentar a diversidade no texto gerado. Por outro lado, `torch.argmax` é útil quando se deseja escolher o token mais provável de forma determinística ou priorizar predições de alta confiança.
 &nbsp;  
 <br/>
-**Temperatura**<br/>
-No contexto dos modelos de Linguagem de Múltiplas Tarefas (LLM), como o ChatGPT, o parâmetro "temperatura" é uma configuração que controla a aleatoriedade e a suavidade das respostas geradas pelo modelo.
-
-O parâmetro temperatura é usado durante o processo de amostragem para equilibrar a exploração e a explotação do modelo. Quando a temperatura é alta, as respostas geradas pelo modelo tendem a ser mais aleatórias, diversificadas e surpreendentes. Por outro lado, quando a temperatura é baixa, as respostas são mais determinísticas, coerentes e previsíveis.
-
-Ao definir a temperatura, você pode ajustar o equilíbrio entre a criatividade do modelo e a coesão das respostas. Uma temperatura alta pode levar a respostas mais criativas, mas também pode resultar em respostas incoerentes ou fora de contexto. Por outro lado, uma temperatura baixa pode fornecer respostas mais seguras, mas potencialmente menos interessantes.
-
-Por exemplo, quando a temperatura é definida como 0 (zero), a amostragem é totalmente determinística, e o modelo sempre escolherá a palavra mais provável em cada etapa de geração de texto (muito parecido com o uso de `torch.argmax`). Em contrapartida, uma temperatura alta, como 1.0 ou superior, permitirá que o modelo explore mais as diferentes possibilidades e gere respostas mais variadas.
 
 É importante experimentar diferentes valores de temperatura para encontrar o equilíbrio adequado para a tarefa específica em mãos e para as preferências do usuário.
 ```python
@@ -735,44 +922,8 @@ A — Apenéiº Jose-lheCNeDIAPerY!jês Imâni2
 Depois de experimentar diferentes valores de temperatura, o valor de `0.9` apresentou melhores respostas.
 &nbsp;  &nbsp;  
 
-**Explicando o conceito visualmente.**
-A escala de temperatura regula a variabilidade das respostas geradas pelo modelo. Ela influencia a entropia da distribuição de probabilidade usada na seleção da próxima palavra, determinando se essa palavra será mais surpreendente ou previsível. Tecnicamente, isso é alcançado ao dividir o vetor logit pelo valor representado por 'T', que simboliza a temperatura. Em seguida, a função softmax é aplicada ao resultado.
-
-$\large P_i=\frac{e^{\frac{logit_i}T}}{\sum_{k=1}^n e^{\frac{logit_k}T}}$
-<br/>
-```python
-logits = logits[:, -1, :] / temperature
-# aplique softmax para converter logits em probabilidades (normalizadas)
-probs = F.softmax(logits, dim=-1)
-# tire uma amostra da distribuição 
-idx_next = torch.multinomial(probs, num_samples=1)
-``` 
+<br/><br/><br/>
 &nbsp;  
-<br/>
-![Temperatura](assets/temperature.gif)
-
-fonte: https://medium.com/mlearning-ai/softmax-temperature-5492e4007f71
-<br/>
-
-**Resposta do GPT-4 à pergunta: `Explique como funciona a temperatura nos Grandes Modelos de Linguagem?`**<br/>
-A "temperatura" é um conceito utilizado em Grandes Modelos de Linguagem (como o GPT-4) durante a etapa de amostragem de respostas. Ela tem um papel fundamental em determinar a natureza das respostas que o modelo fornece. Aqui está uma explicação detalhada:
-
-1. **Amostragem de Respostas**: Depois que o modelo avalia uma entrada e calcula as probabilidades para cada palavra possível como a próxima palavra, ele seleciona a próxima palavra com base nessas probabilidades. Isso é chamado de "amostragem".
-
-2. **Temperatura como um Fator de Escala**: A temperatura é basicamente um fator de escala aplicado às probabilidades calculadas antes da amostragem. Ela afeta a distribuição de probabilidade das palavras.
-
-3. **Efeitos da Temperatura**:
-   - **Temperatura Alta (e.g., > 1)**: Aumentar a temperatura torna a distribuição de probabilidade mais uniforme. Isso significa que o modelo é mais propenso a gerar respostas diversificadas e, por vezes, inesperadas. Em temperaturas muito altas, as respostas podem até se tornar aleatórias.
-   - **Temperatura Baixa (e.g., < 1)**: Diminuir a temperatura torna a distribuição de probabilidade mais "afiada". Isso faz com que o modelo favoreça palavras com maior probabilidade e seja menos propenso a produzir respostas inesperadas. Em temperaturas muito baixas (próximas de 0), o modelo tende a repetir as palavras ou frases mais prováveis, podendo tornar-se excessivamente determinístico.
-
-4. **Aplicações Práticas**:
-   - Em situações onde é desejável obter respostas mais criativas ou diversas, pode-se usar uma temperatura mais alta.
-   - Em situações onde se deseja uma resposta mais confiável e menos propensa a erros, pode-se usar uma temperatura mais baixa.
-
-5. **Balanceamento**: Encontrar a temperatura certa é uma questão de balanceamento entre criatividade e confiabilidade. Dependendo do uso específico, pode-se ajustar a temperatura para obter o tipo de resposta desejada.
-
-Em resumo, a temperatura é uma ferramenta que permite ajustar a "ousadia" ou "cautela" do modelo em suas respostas, influenciando a variabilidade e a previsibilidade das saídas geradas.
-<br/><br/>
 
 
 ## Experimento 4
@@ -849,6 +1000,8 @@ outros.
 Usamos o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) para gerar texto que utiliza o tokenizador tiktoken.
 <br/><br/>
 <br/>
+<br/>
+<br/>
 
 
 ## Experimento 5
@@ -885,6 +1038,7 @@ Você pode ajustar o parâmetro `n_head = 1` e comparar o resultado com figura a
 </div>
 <br/><br/>
 <br/><br/>
+<br/>
 
 ## Referências
 
