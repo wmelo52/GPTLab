@@ -12,20 +12,20 @@ Se você não é um profissional do campo de deep learning e deseja apenas compr
 
 &nbsp;  
 ## Índice
-1. [Instalação](#1-instalação)
-2. [Tokenizer](#2-tokenizer)
-3. [Modelo GPT](#3-modelo-gpt)
-4. [Explicando o modelo nanoGPT](#4-explicando-o-modelo-nanogpt)
-5. [Estratégias de decodificação em grandes modelos de linguagem](#5-Estratégias-de-decodificação-em-grandes-modelos-de-linguagem)
-6. [Função objetivo no pré-treinamento](#6-função-objetivo-no-pré-treinamento)
-7. [Eu tenho uma GPU](#7-eu-tenho-uma-gpu)
-8. [Eu só tenho um PC comum](#8-eu-só-tenho-um-pc-comum)
-9. [Experimento 1](#9-experimento-1)
-10. [Experimento 2](#10-experimento-2)
-11. [Experimento 3](#11-experimento-3)
-12. [Experimento 4](#12-experimento-4)
-13. [Experimento 5](#13-experimento-5)
-14. [Referências](#14-referências)
+1. [Instalação](#1---instalação)
+2. [Tokenizer](#2---tokenizer)
+3. [Modelo GPT](#3---modelo-gpt)
+4. [Explicando o modelo nanoGPT](#4---explicando-o-modelo-nanogpt)
+5. [Estratégias de decodificação em grandes modelos de linguagem](#5---Estratégias-de-decodificação-em-grandes-modelos-de-linguagem)
+6. [Função objetivo no pré-treinamento](#6---função-objetivo-no-pré-treinamento)
+7. [Eu tenho uma GPU](#7---eu-tenho-uma-gpu)
+8. [Eu só tenho um PC comum](#8---eu-só-tenho-um-pc-comum)
+9. [Experimento 1](#9---experimento-1)
+10. [Experimento 2](#10---experimento-2)
+11. [Experimento 3](#11---experimento-3)
+12. [Experimento 4](#12---experimento-4)
+13. [Experimento 5](#13---experimento-5)
+14. [Referências](#14---referências)
 
 
 &nbsp;  
