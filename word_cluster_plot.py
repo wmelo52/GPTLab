@@ -26,6 +26,7 @@ model.load_state_dict(checkpoint)
 model.eval()
 
 
+
 # ---------------------- Making Word cluster plot positional embedding---------------------------- 
 pos = torch.arange(0, config.max_len, dtype=torch.long, device=device).unsqueeze(0) # shape (1, t)
 pos_emb = model.transformer.wpe(pos) # position embeddings na forma (1, t, n_embd)
@@ -46,7 +47,7 @@ import os
 
 wv_name = 'pos_emb_384.txt'
 
-def visualize_embeddings(model_path, wv_name, config, group1, group2):
+def visualize_embeddings(wv_name, config, group1, group2):
     # Loading embedding model
     model_wv = KeyedVectors.load_word2vec_format('data/' + wv_name, binary=False, unicode_errors="ignore")
 
@@ -84,13 +85,13 @@ def visualize_embeddings(model_path, wv_name, config, group1, group2):
     for label, x, y in zip(labels, T[:, 0], T[:, 1]):
         plt.annotate(label, xy=(x+0.20, y+0.20), xytext=(0, 0), textcoords='offset points', fontsize=16)
     
-    fig = ax.get_figure()
+    fig = ax.get_figure()    
     fig.savefig(os.path.join("images", f"{model_name}_{wv_name[:7]}_{config.max_iters}.png"))
+
 
 group = ["12","13","14"]
 vowels_group = ["a","e","i","o","u"]
-visualize_embeddings(model_path, wv_name, config, group, vowels_group)
-
+visualize_embeddings(wv_name, config, group, vowels_group)
 
 
 
@@ -109,5 +110,5 @@ with open("data/tok_emb_384.txt", "w", encoding='utf-8') as f:
 wv_name = 'tok_emb_384.txt'
 vowels_group = ["a","e","i","o","u"]
 numbers_group = ["0","1","2","3","4","5","6","7","8","9"]
-visualize_embeddings(model_path, wv_name, config, vowels_group, numbers_group)
+visualize_embeddings(wv_name, config, vowels_group, numbers_group)
         
