@@ -8,7 +8,6 @@ Se você não é um profissional do campo de deep learning e deseja apenas compr
 
 *Disclaimer: Este artigo foi escrito com o apoio do ChatGPT.*
 
-<br/>
 
 &nbsp;  
 ## Índice
@@ -252,7 +251,7 @@ A conexão residual no decodificador do nanoGPT é utilizada como um caminho alt
 </p> -->
 
 ![nanoGPT](assets/MHA.jpg)
-fig 3.3
+fig 4.1
 <br/><br/>
 
 O mecanismo de self-attention, também conhecido como "atenção própria" ou "autoatenção", é um componente fundamental no decodificador do modelo nanoGPT (Generative Pre-trained Transformer).
@@ -326,7 +325,7 @@ O mecanismo de self-attention no decodificador do modelo GPT ajuda o modelo a en
 **MLP - Multilayer perceptron**<br/><br/>
 <p align="left">
 <img src="assets/MLP.jpg" width="150"/><br/>
-fig 3.4
+fig 4.2
 </p>
 <br/>
 
@@ -401,13 +400,15 @@ O arquivo [teste_multinomial_dist.py](https://github.com/wmelo52/GPTLab/blob/mas
 O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere ([inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py)).
 
 ![nanoGPT](assets/dist_probs_char.png)
-fig 4.1
+fig 4.3
 &nbsp;  &nbsp;  <br/><br/><br/><br/> 
+<br/>
+<br/>
 
 
 ## 5 - [Estratégias de decodificação em grandes modelos de linguagem](https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html)
 
-Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 4.1.
+Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 4.3.
 
 A decodificação é o processo pelo qual um modelo de linguagem gera sequências de texto com base nos logits (saídas não normalizadas) produzidos pelo modelo. Existem várias estratégias de decodificação que podem influenciar a qualidade e a diversidade do texto gerado. Aqui estão algumas das estratégias mais comuns:
 
@@ -589,10 +590,10 @@ Em resumo, o `top_k` é uma técnica de decodificação que restringe a geraçã
 <br/>
 <br/>
 <br/>
+<br/>
 
 ## 6 - Função objetivo no pré-treinamento
-
-&nbsp;  
+ 
 A função objetivo no pré-treinamento do modelo **nanoGPT** tem como objetivo principal treinar o modelo para aprender a capturar e modelar padrões em textos de treinamento de maneira não supervisionada.    
 O pré-treinamento do nanoGPT é realizado utilizando uma tarefa chamada de "previsão da palavra seguinte" (next-word prediction).
 
@@ -775,11 +776,11 @@ O arquivo [word_cluster_plot.py](https://github.com/wmelo52/GPTLab/blob/master/w
 As Matrizes embeddings posicional e token embeddings são inicializadas com pesos aleatoriamente selecionados como demostrado nas figuras abaixo:
 &nbsp;  
 <br/>
-Posicional embeddings<br/>
+Posicional embeddings (max_len=64)<br/>
 <img alt="text" src="assets/init_pos_emb_384.png" width="500" height="300" title="image Title"><br/>
 fig 9.1
 <br/><br/>
-Token embeddings<br/>
+Token embeddings (tamanho do vocabulário=115)<br/>
 <img alt="text" src="assets/init_tok_emb_384.png" width="500" height="300"><br/>
 fig 9.2
 
@@ -794,11 +795,11 @@ No gráfico de token embeddings, observa-se que houve agrupamento de tokens (car
 Observa-se também que as vogais maiúsculas estão próximas entre si, assim como as consoantes maiúsculas e os sinais de pontuação. Os números também estão agrupados próximos uns dos outros.
 &nbsp;  
 <br/>
-Posicional embeddings<br/>
+Posicional embeddings (max_len=64)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_pos_emb_5000.png" width="500" height="300"><br/>
 fig 9.3<br/>
 <br/>
-Token embeddings<br/>
+Token embeddings (tamanho do vocabulário=115)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_tok_emb_5000.png" width="500" height="300"><br/>
 fig 9.4
 
@@ -814,17 +815,17 @@ Quanto ao gráfico de token embeddings, observa-se que houve um agrupamento meno
 Pelos gráficos abaixo, nota-se que os embeddings posicionais não tiveram a convergência necessária, o que justifica a baixa performance na previsão de caracteres.
 &nbsp;  <br/>
 
-Posicional embeddings<br/>
+Posicional embeddings (max_len=32)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_5000.png" width="500" height="300"><br/>
 fig 9.5<br/><br/>
-Token embeddings<br/>
+Token embeddings (tamanho do vocabulário=115)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_CPU_tok_emb_5000.png" width="500" height="300"><br/>
 fig 9.6
 
 <br/>
 Aumentei o número de iterações para 10.000, demorou agora 29 minutos e a perda na validação foi 1,87 e o gráfico do emeddings posicional começou a formar um padrão:  
 <br/><br/>
-Posicional embeddings<br/>
+Posicional embeddings (max_len=32)<br/>
 <div align="left">
   <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_10000.png" width="500" height="300">
 </div>
@@ -1074,7 +1075,7 @@ O script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/
 fig 13.2
 <br/><br/><br/>
 Você pode ajustar o parâmetro `n_head = 1` e comparar o resultado com figura acima. A perda de validação foi um pouco maior do que com `n_head = 6`.
-<br/><br/>
+<br/>
 <div align="left">
   <img alt="text" src="assets/att_tiktoken_head_1.png" width="400" height="400">
 </div>
