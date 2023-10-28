@@ -12,26 +12,27 @@ Se você não é um profissional do campo de deep learning e deseja apenas compr
 
 &nbsp;  
 ## Índice
-1. [Instalação](#instalação)
-2. [Tokenizer](#tokenizer)
-3. [Modelo GPT](#modelo-gpt)
-4. [Explicando o modelo nanoGPT](#explicando-o-modelo-nanogpt)
-5. [Estratégias de decodificação em grandes modelos de linguagem](#Estratégias-de-decodificação-em-grandes-modelos-de-linguagem)
-6. [Função objetivo no pré-treinamento](#função-objetivo-no-pré-treinamento)
-7. [Eu tenho uma GPU](#eu-tenho-uma-gpu)
-8. [Eu só tenho um PC comum](#eu-só-tenho-um-pc-comum)
-9. [Experimento 1](#experimento-1)
-10. [Experimento 2](#experimento-2)
-11. [Experimento 3](#experimento-3)
-12. [Experimento 4](#experimento-4)
-13. [Experimento 5](#experimento-5)
-14. [Referências](#referências)
+1. [Instalação](#1-instalação)
+2. [Tokenizer](#2-tokenizer)
+3. [Modelo GPT](#3-modelo-gpt)
+4. [Explicando o modelo nanoGPT](#4-explicando-o-modelo-nanogpt)
+5. [Estratégias de decodificação em grandes modelos de linguagem](#5-Estratégias-de-decodificação-em-grandes-modelos-de-linguagem)
+6. [Função objetivo no pré-treinamento](#6-função-objetivo-no-pré-treinamento)
+7. [Eu tenho uma GPU](#7-eu-tenho-uma-gpu)
+8. [Eu só tenho um PC comum](#8-eu-só-tenho-um-pc-comum)
+9. [Experimento 1](#9-experimento-1)
+10. [Experimento 2](#10-experimento-2)
+11. [Experimento 3](#11-experimento-3)
+12. [Experimento 4](#12-experimento-4)
+13. [Experimento 5](#13-experimento-5)
+14. [Referências](#14-referências)
 
 
 &nbsp;  
 &nbsp;  
 <br/>
-## Instalação
+
+## 1 - Instalação
 
 Dependências:
 
@@ -46,7 +47,7 @@ OBS: Flash Attention: verificar se versão do PyTorch tem suporte.
 <br/>
 <br/>
 
-## Tokenizer
+## 2 - Tokenizer
 Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
 
 Um tokenizador de nível de caractere divide o texto em caracteres individuais e representa cada caractere como um token separado. Ele oferece uma representação refinada do texto e pode lidar com palavras raras ou não vistas de forma eficaz, mas pode perder a semântica no nível da palavra e aumentar o comprimento da sequência.
@@ -68,7 +69,7 @@ Mas o nosso objetivo é permitir o treinamento deste modelo para a maioria dos u
 <br/><br/>
 <br/>
 
-## Modelo GPT
+## 3 - Modelo GPT
 Os modelos de linguagem baseados em inteligência artificial têm desempenhado um papel cada vez mais importante na geração de  texto coerente e relevante com base em um contexto fornecido. Um desses modelos notáveis é o GPT (Generative Pre-trained Transformer), desenvolvido pela OpenAI.  
 
 Neste projeto, exploramos o potencial do nanoGPT como uma ferramenta de auxílio para o entendimento da arquitetura dos Modelos de Linguagem de Grande Escala (LLM). O nanoGPT, uma versão compacta e acessível do GPT criada por Andrej Karpathy e disponível no repositório do [GitHub](https://github.com/karpathy/nanoGPT). 
@@ -105,6 +106,7 @@ O **nanoGPT** é baseado no modelo GPT, que é um modelo de linguagem baseado em
 &nbsp;  
 
 ![nanoGPT](assets/decoder.jpg)
+fig 3.1
 &nbsp;  
 &nbsp;  
 O **nanoGPT** se baseia na arquitetura do Transformer e a estende usando aprendizado não supervisionado em uma quantidade de dados de texto. Este processo é conhecido como pré-treinamento. Durante o pré-treinamento, o nanoGPT é exposto a um corpus de texto, como os contos de Machado de Assis ou a uma parte da obra de Shakespeare, e aprende a prever o próximo caractere em um determinado contexto. Ao fazer isso, o modelo aprende os padrões estatísticos e as estruturas sintáticas da linguagem humana.
@@ -115,6 +117,7 @@ Abaixo uma figura que descreve a arquitetura do modelo **nanoGPT** detalhadament
 
 
 ![nanoGPT](assets/nanoGPT_model.jpg)
+fig 3.2
    
 ```
 nanoGPTModel(
@@ -148,81 +151,13 @@ nanoGPTModel(
 ```
 &nbsp;  
 <br/> <br/>
-## Função objetivo no pré-treinamento
-
-&nbsp;  
-A função objetivo no pré-treinamento do modelo **nanoGPT** tem como objetivo principal treinar o modelo para aprender a capturar e modelar padrões em textos de treinamento de maneira não supervisionada.    
-O pré-treinamento do nanoGPT é realizado utilizando uma tarefa chamada de "previsão da palavra seguinte" (next-word prediction).
-
-A função objetivo no pré-treinamento é definida da seguinte maneira: dado um contexto de tokens anteriores, o modelo é treinado para prever qual é o próximo token no texto original. Essa previsão é comparada com o token real que aparece no texto e a diferença entre a previsão e o token real é usada para calcular uma medida de perda, como a entropia cruzada (cross-entropy loss - a função de entropia cruzada é usada como uma medida para calcular a discrepância entre a distribuição de probabilidade prevista pelo modelo e a distribuição de probabilidade real dos dado).  
-
-A fórmula da função de entropia cruzada discreta pode ser expressa da seguinte forma:
-<p align="left">
-<img src="assets/cross-entropy.jpg" width="200"/>
-</p>
-
-Onde:
-- H(p,q) é a entropia cruzada entre as distribuições 
-- p representa a distribuição de probabilidade real dos dados.
-- q representa a distribuição de probabilidade prevista pelo modelo.
-- n é o número de tokens (caracteres) possíveis.
-
-A entropia cruzada é calculada para cada evento possível (caractere, no caso do modelo nanoGPT) e, em seguida, somada para obter a perda total.
-
-
-Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e é treinado para ajustar os pesos de suas camadas no modelo para maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Isso é feito iterativamente em um corpus de texto, como os Contos de Machado de Assis.  
-
-Ao prever a palavra seguinte, o modelo é exposto a uma ampla variedade de contextos e padrões linguísticos, o que permite que ele aprenda a reconhecer e capturar informações sobre estrutura gramatical, sintaxe, semântica e co-ocorrência de palavras.
-
-Depois do pré-treinamento, o modelo nanoGPT pode ser ajustado (fine-tuned) em uma tarefa específica usando dados rotulados. Durante o ajuste fino, a função objetivo pode ser alterada para se adequar à tarefa específica em questão, como classificação de sentimentos, tradução ou geração de texto condicional.
-&nbsp;  
-&nbsp;  
-O método abaixo implementa a função objetivo no treinamento do modelo nanoGPT:
-
-```python
-def get_batch(split):
-    data = train_data if split == 'train' else val_data
-    ix = torch.randint(len(data) - config.max_len, (config.batch_size,))
-    x = torch.stack([torch.from_numpy((data[i:i + config.max_len]).astype(np.int64)) for i in ix])
-    y = torch.stack([torch.from_numpy((data[i+1:i+1+config.max_len]).astype(np.int64)) for i in ix])
-    
-    if device == 'cuda':
-        # pin arrays x,y, que nos permite movê-los para a GPU de forma assíncrona (non_blocking=True)
-        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
-    else:
-        x, y = x.to(device), y.to(device)
-    return x, y
-```
-
-Dado a seguinte sentença: 
-*"A figura é poética, mas "*, a sentença codificada para tokens:&nbsp;  
-
-[26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66,101, 71, 60, 54, 52, 10, 1, 64, 52, 70]
-&nbsp;  
-&nbsp;  
-A função objetivo para o pré-treinamento do modelo nanoGPT segue este padrão: 
-&nbsp;  
-
-```
-quando a entrada é [26](A) o alvo é: 1( )
-quando a entrada é [26, 1](A ) o alvo é: 57(f)
-quando a entrada é [26, 1, 57](A f) o alvo é: 60(i)
-quando a entrada é [26, 1, 57, 60](A fi) o alvo é: 58(g)
-quando a entrada é [26, 1, 57, 60, 58](A fig) o alvo é: 72(u)
-quando a entrada é [26, 1, 57, 60, 58, 72](A figu) o alvo é: 69(r)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69](A figur) o alvo é: 52(a)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52](A figura) o alvo é: 1( )
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1](A figura ) o alvo é: 101(é)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101](A figura é) o alvo é: 1( )
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1](A figura é ) o alvo é: 67(p)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67](A figura é p) o alvo é: 66(o)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura é po) o alvo é: 101(é)
-```
-&nbsp;  
 <br/>
 <br/>
 
-## Explicando o modelo nanoGPT
+
+<br/>
+
+## 4 - Explicando o modelo nanoGPT
 &nbsp; 
 ***Embeddings Posicional e Word Embeddings***
 
@@ -317,6 +252,7 @@ A conexão residual no decodificador do nanoGPT é utilizada como um caminho alt
 </p> -->
 
 ![nanoGPT](assets/MHA.jpg)
+fig 3.3
 <br/><br/>
 
 O mecanismo de self-attention, também conhecido como "atenção própria" ou "autoatenção", é um componente fundamental no decodificador do modelo nanoGPT (Generative Pre-trained Transformer).
@@ -389,7 +325,8 @@ O mecanismo de self-attention no decodificador do modelo GPT ajuda o modelo a en
 <br/><br/>
 **MLP - Multilayer perceptron**<br/><br/>
 <p align="left">
-<img src="assets/MLP.jpg" width="150"/>
+<img src="assets/MLP.jpg" width="150"/><br/>
+fig 3.4
 </p>
 <br/>
 
@@ -464,10 +401,13 @@ O arquivo [teste_multinomial_dist.py](https://github.com/wmelo52/GPTLab/blob/mas
 O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere ([inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py)).
 
 ![nanoGPT](assets/dist_probs_char.png)
+fig 4.1
 &nbsp;  &nbsp;  <br/><br/><br/><br/> 
 
 
-## Estratégias de decodificação em grandes modelos de linguagem
+## 5 - [Estratégias de decodificação em grandes modelos de linguagem](https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html)
+
+Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 4.1.
 
 A decodificação é o processo pelo qual um modelo de linguagem gera sequências de texto com base nos logits (saídas não normalizadas) produzidos pelo modelo. Existem várias estratégias de decodificação que podem influenciar a qualidade e a diversidade do texto gerado. Aqui estão algumas das estratégias mais comuns:
 
@@ -520,7 +460,8 @@ idx_next = torch.multinomial(probs, num_samples=1)
 ``` 
 &nbsp;  
 <br/>
-![Temperatura](assets/temperature.gif)
+![Temperatura](assets/temperature.gif)<br/>
+fig 5.1
 
 fonte: https://medium.com/mlearning-ai/softmax-temperature-5492e4007f71
 <br/>
@@ -649,7 +590,83 @@ Em resumo, o `top_k` é uma técnica de decodificação que restringe a geraçã
 <br/>
 <br/>
 
-## Eu tenho uma GPU
+## 6 - Função objetivo no pré-treinamento
+
+&nbsp;  
+A função objetivo no pré-treinamento do modelo **nanoGPT** tem como objetivo principal treinar o modelo para aprender a capturar e modelar padrões em textos de treinamento de maneira não supervisionada.    
+O pré-treinamento do nanoGPT é realizado utilizando uma tarefa chamada de "previsão da palavra seguinte" (next-word prediction).
+
+A função objetivo no pré-treinamento é definida da seguinte maneira: dado um contexto de tokens anteriores, o modelo é treinado para prever qual é o próximo token no texto original. Essa previsão é comparada com o token real que aparece no texto e a diferença entre a previsão e o token real é usada para calcular uma medida de perda, como a entropia cruzada (cross-entropy loss - a função de entropia cruzada é usada como uma medida para calcular a discrepância entre a distribuição de probabilidade prevista pelo modelo e a distribuição de probabilidade real dos dado).  
+
+A fórmula da função de entropia cruzada discreta pode ser expressa da seguinte forma:
+<p align="left">
+<img src="assets/cross-entropy.jpg" width="200"/>
+</p>
+
+Onde:
+- H(p,q) é a entropia cruzada entre as distribuições 
+- p representa a distribuição de probabilidade real dos dados.
+- q representa a distribuição de probabilidade prevista pelo modelo.
+- n é o número de tokens (caracteres) possíveis.
+
+A entropia cruzada é calculada para cada evento possível (caractere, no caso do modelo nanoGPT) e, em seguida, somada para obter a perda total.
+
+
+Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e é treinado para ajustar os pesos de suas camadas no modelo para maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Isso é feito iterativamente em um corpus de texto, como os Contos de Machado de Assis.  
+
+Ao prever a palavra seguinte, o modelo é exposto a uma ampla variedade de contextos e padrões linguísticos, o que permite que ele aprenda a reconhecer e capturar informações sobre estrutura gramatical, sintaxe, semântica e co-ocorrência de palavras.
+
+Depois do pré-treinamento, o modelo nanoGPT pode ser ajustado (fine-tuned) em uma tarefa específica usando dados rotulados. Durante o ajuste fino, a função objetivo pode ser alterada para se adequar à tarefa específica em questão, como classificação de sentimentos, tradução ou geração de texto condicional.
+&nbsp;  
+&nbsp;  
+O método abaixo implementa a função objetivo no treinamento do modelo nanoGPT:
+
+```python
+def get_batch(split):
+    data = train_data if split == 'train' else val_data
+    ix = torch.randint(len(data) - config.max_len, (config.batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i + config.max_len]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+config.max_len]).astype(np.int64)) for i in ix])
+    
+    if device == 'cuda':
+        # pin arrays x,y, que nos permite movê-los para a GPU de forma assíncrona (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+```
+
+Dado a seguinte sentença: 
+*"A figura é poética, mas "*, a sentença codificada para tokens:&nbsp;  
+
+[26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66,101, 71, 60, 54, 52, 10, 1, 64, 52, 70]
+&nbsp;  
+&nbsp;  
+A função objetivo para o pré-treinamento do modelo nanoGPT segue este padrão: 
+&nbsp;  
+
+```
+quando a entrada é [26](A) o alvo é: 1( )
+quando a entrada é [26, 1](A ) o alvo é: 57(f)
+quando a entrada é [26, 1, 57](A f) o alvo é: 60(i)
+quando a entrada é [26, 1, 57, 60](A fi) o alvo é: 58(g)
+quando a entrada é [26, 1, 57, 60, 58](A fig) o alvo é: 72(u)
+quando a entrada é [26, 1, 57, 60, 58, 72](A figu) o alvo é: 69(r)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69](A figur) o alvo é: 52(a)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52](A figura) o alvo é: 1( )
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1](A figura ) o alvo é: 101(é)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101](A figura é) o alvo é: 1( )
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1](A figura é ) o alvo é: 67(p)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67](A figura é p) o alvo é: 66(o)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura é po) o alvo é: 101(é)
+```
+&nbsp;  
+<br/>
+<br/>
+<br/>
+
+
+## 7 - Eu tenho uma GPU
 
 Para treinamento em GPU com pouca memória (4GB) os hiperparâmetros são ajustados para:
 ```
@@ -690,7 +707,7 @@ Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GP
 &nbsp;  
 <br/>
 
-## Eu só tenho um PC comum
+## 8 - Eu só tenho um PC comum
 
 (ou outro computador barato). Não se preocupe, ainda podemos treinar o nanoGPT, mas queremos diminuir um pouco as coisas. 
 
@@ -730,6 +747,7 @@ A perda na validação para o treinamento em CPU
 <div align="left">
   <img alt="text" src="assets/val_loss_machado_de_assis_conto_CPU.png" width="500" height="300">
 </div>
+fig 8.1
 <br/><br/>
 
 - Quando utilizamos o treinamento em CPU, o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 64, o que resulta em 115x64 = 7360. 
@@ -737,8 +755,9 @@ A perda na validação para o treinamento em CPU
 
 <br/><br/>
 <br/>
+<br/>
 
-## Experimento 1
+## 9 - Experimento 1
 
 **Visualizando embeddings posicional e embeddings dos tokens (GPU)**
 
@@ -756,11 +775,16 @@ O arquivo [word_cluster_plot.py](https://github.com/wmelo52/GPTLab/blob/master/w
 As Matrizes embeddings posicional e token embeddings são inicializadas com pesos aleatoriamente selecionados como demostrado nas figuras abaixo:
 &nbsp;  
 <br/>
-<div align="left">
-  <img alt="text" src="assets/init_pos_emb_384.png" width="500" height="300">&nbsp;&nbsp;
-  <img alt="text" src="assets/init_tok_emb_384.png" width="500" height="300">
-</div>
+Posicional embeddings<br/>
+<img alt="text" src="assets/init_pos_emb_384.png" width="500" height="300" title="image Title"><br/>
+fig 9.1
 <br/><br/>
+Token embeddings<br/>
+<img alt="text" src="assets/init_tok_emb_384.png" width="500" height="300"><br/>
+fig 9.2
+
+<br/><br/>
+<br/>
 
 
 No treinamento em GPU com um modelo de 10,2M de parâmetros, que utilizou hiperparâmetros de arquitetura maiores e obteve uma função de perda de 1,44, os resultados abaixo mostram um padrão nos embeddings posicionais. No gráfico desses embeddings, nota-se uma variação de 0 a 63, correspondente ao comprimento máximo da sentença, que é de 64.
@@ -769,10 +793,15 @@ No gráfico de token embeddings, observa-se que houve agrupamento de tokens (car
 
 Observa-se também que as vogais maiúsculas estão próximas entre si, assim como as consoantes maiúsculas e os sinais de pontuação. Os números também estão agrupados próximos uns dos outros.
 &nbsp;  
-<div align="left">
-  <img alt="text" src="assets/machado_de_assis_conto_pos_emb_5000.png" width="500" height="300">&nbsp;&nbsp;
-  <img alt="text" src="assets/machado_de_assis_conto_tok_emb_5000.png" width="500" height="300">
-</div>
+<br/>
+Posicional embeddings<br/>
+<img alt="text" src="assets/machado_de_assis_conto_pos_emb_5000.png" width="500" height="300"><br/>
+fig 9.3<br/>
+<br/>
+Token embeddings<br/>
+<img alt="text" src="assets/machado_de_assis_conto_tok_emb_5000.png" width="500" height="300"><br/>
+fig 9.4
+
 <br/><br/>
 
 
@@ -783,22 +812,29 @@ No treinamento em CPU com um modelo de 200k de parâmetros, que utilizou hiperpa
 Quanto ao gráfico de token embeddings, observa-se que houve um agrupamento menor de tokens (caracteres) relacionados quando comparado ao modelo de 10M de parâmetros.
 
 Pelos gráficos abaixo, nota-se que os embeddings posicionais não tiveram a convergência necessária, o que justifica a baixa performance na previsão de caracteres.
-&nbsp;  
-<div align="left">
-  <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_5000.png" width="500" height="300">&nbsp;&nbsp;
-  <img alt="text" src="assets/machado_de_assis_conto_CPU_tok_emb_5000.png" width="500" height="300">
-</div>
+&nbsp;  <br/>
+
+Posicional embeddings<br/>
+<img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_5000.png" width="500" height="300"><br/>
+fig 9.5<br/><br/>
+Token embeddings<br/>
+<img alt="text" src="assets/machado_de_assis_conto_CPU_tok_emb_5000.png" width="500" height="300"><br/>
+fig 9.6
+
 <br/>
 Aumentei o número de iterações para 10.000, demorou agora 29 minutos e a perda na validação foi 1,87 e o gráfico do emeddings posicional começou a formar um padrão:  
 <br/><br/>
+Posicional embeddings<br/>
 <div align="left">
   <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_10000.png" width="500" height="300">
 </div>
+fig 9.7
 <br/><br/><br/>
 <br/>
 <br/>
 
-## Experimento 2
+
+## 10 - Experimento 2
 <br/>
 
 **Vídeos sobre embeddings posicional e embeddings dos tokens**
@@ -812,6 +848,7 @@ Ao visualizar o vídeo, nota-se que no início as posições "12", "13" e "14" e
 <div align="left">
   <img alt="text" src="assets/val_loss_machado_de_assis_conto.png" width="500" height="300">
 </div>
+fig 10.1
 <br/><br/>
 
 [vídeo embeddings posicional](https://github.com/wmelo52/GPTLab/assets/61335830/8d4f9292-f1b1-4801-8898-3b583d9056fb)
@@ -826,9 +863,10 @@ Para o token embeddings foram marcados dois grupos: vogais (`"a","e","i","o","u"
 
 <br/><br/>
 <br/>
+<br/>
 
 
-## Experimento 3
+## 11 - Experimento 3
 <br/>
 
 **Prevendo o próximo token:  `torch.multinomial` ou `torch.argmax`**
@@ -924,9 +962,10 @@ Depois de experimentar diferentes valores de temperatura, o valor de `0.9` apres
 
 <br/><br/><br/>
 &nbsp;  
+<br/>
 
 
-## Experimento 4
+## 12 - Experimento 4
 <br/>
 
 **Qual tokenizador usar: caracteres ou subpalavras**
@@ -1002,9 +1041,10 @@ Usamos o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLa
 <br/>
 <br/>
 <br/>
+<br/>
 
 
-## Experimento 5
+## 13 - Experimento 5
 <br/>
 
 **Plotando os pesos de atenção**
@@ -1026,21 +1066,24 @@ Em resumo, a utilização de várias heads no mecanismo de self-attention no dec
 O script [inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py) foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_CPU** (`n_head = 4`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de caractere foi usado para tokenizar a sentença `'A figura é poética'`.
 
 ![nanoGPT](assets/att_char.png)
+fig 13.1
 <br/>  <br/>  
 O script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_tok_GPT2** (`n_head = 6`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
 
 ![nanoGPT](assets/att_tiktoken.png)
+fig 13.2
 <br/><br/><br/>
 Você pode ajustar o parâmetro `n_head = 1` e comparar o resultado com figura acima. A perda de validação foi um pouco maior do que com `n_head = 6`.
 <br/><br/>
-<div align="center">
+<div align="left">
   <img alt="text" src="assets/att_tiktoken_head_1.png" width="400" height="400">
 </div>
+fig 13.3
 <br/><br/>
 <br/><br/>
 <br/>
 
-## Referências
+## 14 - Referências
 
 [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
 
