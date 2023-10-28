@@ -19,6 +19,9 @@ tokenizer = nanoGPTTokenizer(model_path)
 model = nanoGPTModel(config)    
 model.to(device)   
    
+stoi = { ch:i for i,ch in enumerate(tokenizer.vocab) }
+penalty_dict = {"u": -0.5, "a": 0.5}  # Penalize "e" and encourage "a"
+
 ckpt_path = f'{model_path}/pytorch_model.bin'     
 checkpoint = torch.load(ckpt_path, map_location=device)
 model.load_state_dict(checkpoint)
@@ -31,7 +34,7 @@ sentence = 'A figura é poética,'
 sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
 
 # top_k: top probabilidades
-output = model.generate(sent, max_new_tokens=1400, temperature=0.9, top_k=None)
+output = model.generate(sent, max_new_tokens=1400, temperature=0.8, top_k=None, penalty_factor=None, presence_penalty=penalty_dict, token_to_id=stoi)
 print(tokenizer.decode(output[0].tolist()))
 
 # print(model.count_parameters())

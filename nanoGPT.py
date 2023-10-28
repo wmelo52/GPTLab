@@ -303,17 +303,65 @@ class nanoGPTModel(nn.Module):
                 total_params += num_params
         print(f"Total Trainable Parameters: {total_params}")
         
+    
+    def apply_frequency_penalty(self, logits, generated_tokens, penalty_factor):
+        """
+        Apply frequency penalty to the logits.
+
+        Args:
+        - logits (np.array): The raw output logits from the language model for the next token prediction.
+        - generated_tokens (list of int): List of token IDs that have already been generated.
+        - penalty_factor (float): The factor by which the logits of already generated tokens will be penalized.
+
+        Returns:
+        - np.array: Modified logits.
+        """
+
+        logits = logits.squeeze(0).squeeze(0).cpu().numpy()
+        generated_tokens = generated_tokens.squeeze(0).cpu()
+        # Count the frequency of each token in the generated tokens
+        token_counts = np.bincount(generated_tokens, minlength=len(logits))
         
+        # Apply penalty to logits of tokens that have already been generated
+        penalized_logits = logits - penalty_factor * token_counts
+
+        tensor_penalized_logits = torch.tensor(penalized_logits).unsqueeze(0).unsqueeze(0)
+        return tensor_penalized_logits.to('cuda')
+    
+    
+    def apply_presence_penalty(self, logits, token_to_id, penalty_dict):
+        """
+        Apply presence penalty to the logits.
+
+        Args:
+        - logits (np.array): The raw output logits from the language model for the next token prediction.
+        - token_to_id (dict): Dictionary that maps tokens (words or subwords) to their respective IDs.
+        - penalty_dict (dict): Dictionary that specifies the penalty values for certain tokens.
+
+        Returns:
+        - np.array: Modified logits.
+        """
+        logits = logits.squeeze(0).squeeze(0).cpu().numpy()
+
+        for token, penalty in penalty_dict.items():
+            if token in token_to_id:
+                token_id = token_to_id[token]
+                logits[token_id] += penalty
+
+        tensor_penalized_logits = torch.tensor(logits).unsqueeze(0).unsqueeze(0)
+        return tensor_penalized_logits.to('cuda')
+
+
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None, frequency_penalty=0):
+    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None, penalty_factor=None, presence_penalty=None, token_to_id=None):
         """
         Pegue uma sequência de condicionamento de índices idx (LongTensor de forma (b,t)) e complete
         a sequência max_new_tokens vezes, alimentando as previsões de volta ao modelo a cada vez.
         Muito provavelmente você vai querer certificar-se de estar no modo de operação model.eval() para isso.
         """
         b, t = idx.size()
-        assert t <= self.config.max_len, f"Não é possível encaminhar a sequência de comprimento {t}, o tamanho máximo de tokens na sentença é {self.config.max_len}"
-        
+        assert t <= self.config.max_len, f"Não é possível encaminhar a sequência de comprimento {t}, o tamanho máximo de tokens na sentença é {self.config.max_len}"        
+
         for _ in range(max_new_tokens):
             # se o contexto da sequência estiver crescendo muito, devemos cortá-lo em max_len
             if idx.size(1) <= self.config.max_len:
@@ -326,8 +374,18 @@ class nanoGPTModel(nn.Module):
             model_output = self(idx_cond)
             logits = model_output.logits
             
+            # A penalidade de frequência é utilizada para reduzir a repetição de palavras ou frases no texto gerado.
+            # que já foram produzidas na sessão de geração atual. 
+            if penalty_factor is not None:
+                logits = self.apply_frequency_penalty(logits, idx_cond, penalty_factor)
+
+            # a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, 
+            # seja para aumentá-la ou diminuí-la.
+            if presence_penalty is not None:
+                logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty)
+
             # pegue os logits na etapa final e dimensione pela temperatura desejada
-            temperature = 0.001 if temperature == 0.0 else temperature
+            temperature = 0.0001 if temperature == 0.0 else temperature
             logits = logits[:, -1, :] / temperature
             
             # top_k: top probabilidades, opcionalmente, corte os logits para apenas as k principais opções
