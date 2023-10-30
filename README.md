@@ -19,11 +19,11 @@ Se você não é um profissional do campo de deep learning e deseja apenas compr
 6. [Função objetivo no pré-treinamento](#6---função-objetivo-no-pré-treinamento)
 7. [Eu tenho uma GPU](#7---eu-tenho-uma-gpu)
 8. [Eu só tenho um PC comum](#8---eu-só-tenho-um-pc-comum)
-9. [Experimento 1](#9---experimento-1)
-10. [Experimento 2](#10---experimento-2)
-11. [Experimento 3](#11---experimento-3)
-12. [Experimento 4](#12---experimento-4)
-13. [Experimento 5](#13---experimento-5)
+9. [Experimento 1 - Visualizando embeddings](#9---experimento-1)
+10. [Experimento 2 - Vídeos sobre embeddings](#10---experimento-2)
+11. [Experimento 3 - Variando a Temperatura](#11---experimento-3)
+12. [Experimento 4 - Qual tokenizador usar: caracteres ou subpalavras](#12---experimento-4)
+13. [Experimento 5 - Plotando os pesos de atenção](#13---experimento-5)
 14. [Referências](#14---referências)
 
 
@@ -836,10 +836,9 @@ fig 9.7
 
 
 ## 10 - Experimento 2
-<br/>
 
-**Vídeos sobre embeddings posicional e embeddings dos tokens**
-<br/>
+### Vídeos sobre embeddings posicional e embeddings dos tokens
+
 Durante o treinamento do modelo nanoGPT, 50 imagens foram geradas. A cada 100 passos, duas imagens eram geradas, reduzindo a dimensionalidade de 384 para 2 utilizando o algoritmo t-SNE.
 
 No caso dos embeddings posicionais, as posições "12", "13" e "14" foram marcadas em vermelho, enquanto as outras 61 posições foram marcadas em azul. O site [clideo.com](https://clideo.com/image-sequence-to-video) foi utilizado para converter essas sequências de imagens em vídeo, com 0,5 segundos para cada imagem.
@@ -868,7 +867,9 @@ Para o token embeddings foram marcados dois grupos: vogais (`"a","e","i","o","u"
 
 
 ## 11 - Experimento 3
-<br/>
+
+
+### Variando a Temperatura
 
 **Prevendo o próximo token:  `torch.multinomial` ou `torch.argmax`**
 <br/>
@@ -898,7 +899,11 @@ de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto
 de ser alguma coisa que ele se aconteceu a mesma coisa de um minuto 
 de ser alguma coisa que ele se aconteceu a 
 ```
-Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de geração de linguagem, o objetivo é prever o próximo token mais provável dado o contexto. Tanto `torch.multinomial` quanto `torch.argmax` podem ser usados para esse propósito, mas eles têm propósitos diferentes e implicam em resultados diferentes.
+
+OBS:O resultado acima poderia ser obtido utilizando a função de amostragem `torch.multinomial` e ajustando o parâmetro temperatura para zero.
+<br/>
+
+Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de geração de linguagem, o objetivo é prever o próximo token dado o contexto. Tanto `torch.multinomial` quanto `torch.argmax` podem ser usados para esse propósito, mas eles têm propósitos diferentes e implicam em resultados diferentes.
 
 1. `torch.multinomial`:
 
@@ -920,6 +925,7 @@ Em resumo, `torch.multinomial` é frequentemente preferido em modelos de geraç�
 ```python
 output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
 ```
+<br/>
 Mudando a temperatura para `0.5` no modelo `checkpoints/machado_de_assis_conto`, o texto gerado é mais determinístico, coerente e previsível:
 
 ```
@@ -940,6 +946,7 @@ Nasceu termosamente a opinião da família do seu caráter.
 Velho que ele disse que é a pouco depois de ser ao contrário.
 Estava assim de uma conversação.
 ```
+<br/>
 Mudando a temperatura para `2.0` no modelo `checkpoints/machado_de_assis_conto`, o texto gerado tende a ser mais aleatório e diversificado:
 
 ```
@@ -958,7 +965,7 @@ jarlim; digveôm-se-BstÚ*LHA 9ibuna, eu colheaçaC5, é suscerTuiricê, nl! o d
 mas infWlândI$*.
 A — Apenéiº Jose-lheCNeDIAPerY!jês Imâni2
 ```
-Depois de experimentar diferentes valores de temperatura, o valor de `0.9` apresentou melhores respostas.
+Depois de experimentar diferentes valores de temperatura, o valor de `0.8` apresentou melhores respostas.
 &nbsp;  &nbsp;  
 
 <br/><br/><br/>
@@ -967,10 +974,8 @@ Depois de experimentar diferentes valores de temperatura, o valor de `0.9` apres
 
 
 ## 12 - Experimento 4
-<br/>
 
-**Qual tokenizador usar: caracteres ou subpalavras**
-
+### Qual tokenizador usar: caracteres ou subpalavras
 Tokenizador de nível de caractere:
 
 - Segmentação: O tokenizador de nível de caractere segmenta o texto em unidades individuais de caracteres, como letras, números e sinais de pontuação. Cada caractere é tratado como um token separado.
@@ -979,6 +984,7 @@ Para a sentença 'A figura é poética!', o resultado da tokenização é:
 ```
 'A', ' ', 'f', 'i', 'g', 'u', 'r', 'a', ' ', 'é', ' ', 'p', 'o', 'é', 't', 'i', 'c', 'a', '!'
 ```
+<br/>
 Tokenizador de nível de subpalavras:
 
 - Segmentação: O tokenizador de nível de subpalavras segmenta o texto em unidades menores, que podem ser partes de palavras ou subpalavras. Essas unidades são frequentemente criadas com base em um algoritmo de aprendizado de máquina, como o algoritmo BPE (Byte Pair Encoding) ou similar.
@@ -1046,10 +1052,8 @@ Usamos o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLa
 
 
 ## 13 - Experimento 5
-<br/>
+### Plotando os pesos de atenção
 
-**Plotando os pesos de atenção**
-<br/><br/>
 O mecanismo de self-attention no decodificador do modelo GPT utiliza várias "heads" para capturar diferentes relações e informações em um texto. Cada head é responsável por aprender uma representação diferente e capturar uma perspectiva única dos tokens de entrada.
 
 Existem algumas razões pelas quais várias heads são necessárias no mecanismo de self-attention:
