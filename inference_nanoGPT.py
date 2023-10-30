@@ -34,8 +34,17 @@ sentence = 'A figura é poética,'
 sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
 
 # https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html
-output = model.generate(sent, max_new_tokens=1400, temperature=0.8, top_k=None, penalty_factor=None, presence_penalty=penalty_dict, token_to_id=stoi)
-print(tokenizer.decode(output[0].tolist()))
+output = model.generate(sent, 
+                        temperature=0.8, 
+                        max_new_tokens=1400,                         
+                        top_k=None, 
+                        frequency_penalty=None, #0.2
+                        presence_penalty=None, #penalty_dict, 
+                        stop_sequence=None,#"\n",
+                        token_to_id=stoi)
+
+predicted_tokens = output[0].tolist()
+print(tokenizer.decode(predicted_tokens))
 
 # print(model.count_parameters())
 # print(model.transformer.h[0].ln_1.a_2)

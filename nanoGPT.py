@@ -304,7 +304,7 @@ class nanoGPTModel(nn.Module):
         print(f"Total Trainable Parameters: {total_params}")
         
     
-    def apply_frequency_penalty(self, logits, generated_tokens, penalty_factor):
+    def apply_frequency_penalty(self, logits, generated_tokens, frequency_penalty):
         """
         Apply frequency penalty to the logits.
 
@@ -323,7 +323,7 @@ class nanoGPTModel(nn.Module):
         token_counts = np.bincount(generated_tokens, minlength=len(logits))
         
         # Apply penalty to logits of tokens that have already been generated
-        penalized_logits = logits - penalty_factor * token_counts
+        penalized_logits = logits - frequency_penalty * token_counts
 
         tensor_penalized_logits = torch.tensor(penalized_logits).unsqueeze(0).unsqueeze(0)
         return tensor_penalized_logits.to('cuda')
@@ -353,14 +353,17 @@ class nanoGPTModel(nn.Module):
 
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None, penalty_factor=None, presence_penalty=None, token_to_id=None):
+    def generate(self, idx, temperature=1.0, max_new_tokens=500, top_k=None, frequency_penalty=None, presence_penalty=None, token_to_id=None, stop_sequence=None):
         """
         Pegue uma sequência de condicionamento de índices idx (LongTensor de forma (b,t)) e complete
         a sequência max_new_tokens vezes, alimentando as previsões de volta ao modelo a cada vez.
         Muito provavelmente você vai querer certificar-se de estar no modo de operação model.eval() para isso.
         """
         b, t = idx.size()
-        assert t <= self.config.max_len, f"Não é possível encaminhar a sequência de comprimento {t}, o tamanho máximo de tokens na sentença é {self.config.max_len}"        
+        assert t <= self.config.max_len, f"Não é possível encaminhar a sequência de comprimento {t}, o tamanho máximo de tokens na sentença é {self.config.max_len}"                
+
+        if stop_sequence is not None:
+            stop_sequence_id = token_to_id[stop_sequence]
 
         for _ in range(max_new_tokens):
             # se o contexto da sequência estiver crescendo muito, devemos cortá-lo em max_len
@@ -368,16 +371,15 @@ class nanoGPTModel(nn.Module):
                 idx_cond = idx  
             else: 
                 idx_cond = idx[:, -self.config.max_len:]
-            #idx_cond = idx if idx.size(1) <= self.config.max_len else idx[:, -self.config.max_len:]
+
             # encaminhar o modelo para obter os logits para o índice na sequência
-            #logits, _, _ = self(idx_cond)
             model_output = self(idx_cond)
             logits = model_output.logits
             
             # A penalidade de frequência é utilizada para reduzir a repetição de palavras ou frases no texto gerado.
             # que já foram produzidas na sessão de geração atual. 
-            if penalty_factor is not None:
-                logits = self.apply_frequency_penalty(logits, idx_cond, penalty_factor)
+            if frequency_penalty is not None:
+                logits = self.apply_frequency_penalty(logits, idx_cond, frequency_penalty)
 
             # a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, 
             # seja para aumentá-la ou diminuí-la.
@@ -398,9 +400,15 @@ class nanoGPTModel(nn.Module):
             probs = F.softmax(logits, dim=-1)
             # tire uma amostra da distribuição 
             idx_next = torch.multinomial(probs, num_samples=1)
-            #idx_next = torch.argmax(probs, dim=1).unsqueeze(1)            
+            #idx_next = torch.argmax(probs, dim=1).unsqueeze(1)  
+                      
             # anexe o índice amostrado à sequência em execução e continue
             idx = torch.cat((idx, idx_next), dim=1)
+
+            # As sequências de parada, também conhecidas como sequências de terminação ou marcadores de final de texto, 
+            # são sequências predefinidas de tokens que sinalizam a um modelo de linguagem para parar de gerar mais texto.
+            if stop_sequence is not None and stop_sequence_id in idx:
+                break
 
         return idx
       

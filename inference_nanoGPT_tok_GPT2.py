@@ -31,7 +31,12 @@ sentence = 'A figura é poética, mas não é a da heroína do romance.'
 sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
 
 # top_k: top probabilidades
-output = model.generate(sent, max_new_tokens=500, temperature=0.8, top_k=None, penalty_factor=None)
+output = model.generate(sent, 
+                        temperature=0.8,
+                        max_new_tokens=500,                          
+                        top_k=None, 
+                        frequency_penalty=None)
+
 print(tokenizer.decode(output[0].tolist()))
 
 #print(model.count_parameters())
