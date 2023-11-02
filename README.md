@@ -387,7 +387,8 @@ A camada "Linear Head" no decodificador do modelo nanoGPT é a camada final resp
 
 Em resumo, a camada `Linear Head` no decodificador do nanoGPT é a camada de saída que transforma as representações internas do modelo em predições concretas para o próximo token na sequência. Ela desempenha um papel crucial tanto no treinamento (ajustando seus pesos para minimizar o erro) quanto na inferência (gerando novos textos).
 
-<br/><br/>
+<br/>
+<br/>
 <br/>  
 
 
@@ -395,12 +396,21 @@ Em resumo, a camada `Linear Head` no decodificador do nanoGPT é a camada de sa�
 
 Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 5.1.
 
-A decodificação é o processo pelo qual um modelo de linguagem gera sequências de texto com base nos logits (saídas não normalizadas) produzidos pelo modelo. 
-
 ### Generate<br/>
 A função `generate` é fundamental em modelos generativos como o nanoGPT, sendo responsável pela produção de sequências de texto a partir de uma entrada ou prompt fornecido.
 
-Existem várias estratégias de decodificação que podem influenciar a qualidade e a diversidade do texto gerado. Aqui estão algumas das estratégias implementadas no método **generate**:
+O primeiro passo é obter os logits (scores) da saída do modelo nanoGPT.
+```python
+  # realize uma inferência (logits) no modelo nanoGPT com base em uma sequência de entrada (idx_cond).
+  model_output = self(idx_cond)
+  logits = model_output.logits
+```
+
+A decodificação é o processo pelo qual um modelo de linguagem gera sequências de texto com base nos logits (saídas não normalizadas) produzidos pelo modelo. 
+
+A partir desses logits iniciais, existem várias estratégias de decodificação que podem alterá-los, potencialmente influenciando a qualidade e diversidade do texto gerado.
+
+Aqui estão algumas das estratégias implementadas no método **generate**:
 <br/>
 
 **1 - Temperatura**<br/>
