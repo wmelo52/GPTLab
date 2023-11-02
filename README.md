@@ -511,10 +511,10 @@ Desafios:
 Implementação no método generate:
 ```python
   # top_k: top probabilidades, opcionalmente, corte os logits para apenas as k principais opções
-  if top_k is not None:
-      # torch.topk - retorna os k maiores elementos do tensor de entrada fornecido ao longo de uma determinada dimensão.
-      v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-      logits[logits < v[:, [-1]]] = -float('Inf')       
+  # a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, 
+  # seja para aumentá-la ou diminuí-la.
+  if presence_penalty is not None:
+     logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty).to(device)     
 ```
 <br/>
 <br/>
