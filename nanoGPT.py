@@ -396,7 +396,7 @@ class nanoGPTModel(nn.Module):
             else: 
                 idx_cond = idx[:, -self.config.max_len:]
 
-            # encaminhar o modelo para obter os logits para o índice na sequência
+            # realize uma inferência (logits) no modelo nanoGPT com base em uma sequência de entrada (idx_cond).
             model_output = self(idx_cond)
             logits = model_output.logits
             
