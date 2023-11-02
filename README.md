@@ -469,6 +469,7 @@ Considerações:
 - **Integração com Outras Técnicas**: A penalidade de frequência pode ser combinada com outras técnicas de refinamento da geração de texto, como a penalidade de temperatura, para obter saídas ainda mais controladas e coerentes.
 <br/>
 <br/>
+
 Implementação no método generate:
 ```python
     # A penalidade de frequência é utilizada para reduzir a repetição de palavras ou frases no texto gerado.
@@ -507,6 +508,7 @@ Desafios:
 - **Conhecimento do Modelo**: Para aplicar efetivamente a penalidade de presença, é útil ter um entendimento de como o modelo funciona e quais tokens são relevantes para a tarefa em questão.
 <br/>
 <br/>
+
 Implementação no método generate:
 ```python
   # top_k: top probabilidades, opcionalmente, corte os logits para apenas as k principais opções
