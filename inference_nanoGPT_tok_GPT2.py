@@ -29,13 +29,17 @@ context = torch.zeros((1, 1), dtype=torch.long, device=device)
 #sentence = 'To be or not to be '
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
 sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
+# sequências de parada
+stop_sequence = tokenizer.encode('\n—')
 
 # top_k: top probabilidades
 output = model.generate(sent, 
                         temperature=0.8,
                         max_new_tokens=500,                          
                         top_k=None, 
-                        frequency_penalty=None)
+                        frequency_penalty=None,
+                        stop_sequence=None, #stop_sequence,
+                       )
 
 print(tokenizer.decode(output[0].tolist()))
 
