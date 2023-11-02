@@ -14,8 +14,8 @@ Se você não é especialista em deep learning mas deseja entender as arquitetur
 2. [Tokenizer](#2---tokenizer)
 3. [Modelo GPT](#3---modelo-gpt)
 4. [Explicando o modelo nanoGPT](#4---explicando-o-modelo-nanogpt)
-5. [Estratégias de decodificação em grandes modelos de linguagem](#5---Estratégias-de-decodificação-em-grandes-modelos-de-linguagem)
-6. [Função objetivo no pré-treinamento](#6---função-objetivo-no-pré-treinamento)
+5. [Função objetivo no pré-treinamento](#5---função-objetivo-no-pré-treinamento)
+6. [Estratégias de decodificação em grandes modelos de linguagem](#6---Estratégias-de-decodificação-em-grandes-modelos-de-linguagem)
 7. [Eu tenho uma GPU](#7---eu-tenho-uma-gpu)
 8. [Eu só tenho um PC comum](#8---eu-só-tenho-um-pc-comum)
 9. [Experimento 1 - Visualizando embeddings](#9---experimento-1)
@@ -391,8 +391,82 @@ Em resumo, a camada `Linear Head` no decodificador do nanoGPT é a camada de sa�
 <br/>
 <br/>  
 
+## 5 - Função objetivo no pré-treinamento
+ 
+A função objetivo no pré-treinamento do modelo **nanoGPT** tem como objetivo principal treinar o modelo para aprender a capturar e modelar padrões em textos de treinamento de maneira não supervisionada.    
+O pré-treinamento do nanoGPT é realizado utilizando uma tarefa chamada de "previsão da palavra seguinte" (next-word prediction).
 
-## 5 - [Estratégias de decodificação em grandes modelos de linguagem](https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html)
+A função objetivo no pré-treinamento é definida da seguinte maneira: dado um contexto de tokens anteriores, o modelo é treinado para prever qual é o próximo token no texto original. Essa previsão é comparada com o token real que aparece no texto e a diferença entre a previsão e o token real é usada para calcular uma medida de perda, como a entropia cruzada (cross-entropy loss - a função de entropia cruzada é usada como uma medida para calcular a discrepância entre a distribuição de probabilidade prevista pelo modelo e a distribuição de probabilidade real dos dado).  
+
+A fórmula da função de entropia cruzada discreta pode ser expressa da seguinte forma:
+<p align="left">
+<img src="assets/cross-entropy.jpg" width="200"/>
+</p>
+
+Onde:
+- H(p,q) é a entropia cruzada entre as distribuições 
+- p representa a distribuição de probabilidade real dos dados.
+- q representa a distribuição de probabilidade prevista pelo modelo.
+- n é o número de tokens (caracteres) possíveis.
+
+A entropia cruzada é calculada para cada evento possível (caractere, no caso do modelo nanoGPT) e, em seguida, somada para obter a perda total.
+
+Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e treinado para ajustar os pesos de suas camadas, com o objetivo de maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Esse processo é realizado de forma iterativa em um corpus de texto, como os Contos de Machado de Assis.
+
+Ao prever a próxima palavra, o modelo é exposto a uma ampla variedade de contextos e padrões linguísticos, permitindo que ele aprenda a reconhecer e capturar informações sobre estrutura gramatical, sintaxe, semântica e co-ocorrência de palavras.
+
+Após o pré-treinamento, o modelo nanoGPT pode ser ajustado (fine-tuned) para uma tarefa específica usando dados rotulados. Durante o ajuste fino, a função objetivo pode ser alterada para se adequar à tarefa em questão, como classificação de sentimentos, tradução ou geração de texto condicional.
+&nbsp;  
+&nbsp;  
+O método abaixo implementa a função objetivo no treinamento do modelo nanoGPT:
+
+```python
+def get_batch(split):
+    data = train_data if split == 'train' else val_data
+    ix = torch.randint(len(data) - config.max_len, (config.batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i + config.max_len]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+config.max_len]).astype(np.int64)) for i in ix])
+    
+    if device == 'cuda':
+        # pin arrays x,y, que nos permite movê-los para a GPU de forma assíncrona (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+```
+
+Dado a seguinte sentença: 
+*"A figura é poética, mas "*, a sentença codificada para tokens:&nbsp;  
+
+[26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66,101, 71, 60, 54, 52, 10, 1, 64, 52, 70]
+&nbsp;  
+&nbsp;  
+A função objetivo para o pré-treinamento do modelo nanoGPT segue este padrão: 
+&nbsp;  
+
+```
+quando a entrada é [26](A) o alvo é: 1( )
+quando a entrada é [26, 1](A ) o alvo é: 57(f)
+quando a entrada é [26, 1, 57](A f) o alvo é: 60(i)
+quando a entrada é [26, 1, 57, 60](A fi) o alvo é: 58(g)
+quando a entrada é [26, 1, 57, 60, 58](A fig) o alvo é: 72(u)
+quando a entrada é [26, 1, 57, 60, 58, 72](A figu) o alvo é: 69(r)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69](A figur) o alvo é: 52(a)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52](A figura) o alvo é: 1( )
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1](A figura ) o alvo é: 101(é)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101](A figura é) o alvo é: 1( )
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1](A figura é ) o alvo é: 67(p)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67](A figura é p) o alvo é: 66(o)
+quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura é po) o alvo é: 101(é)
+```
+&nbsp;  
+<br/>
+<br/>
+<br/>
+
+
+
+## 6 - [Estratégias de decodificação em grandes modelos de linguagem](https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html)
 
 Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 5.1.
 
@@ -592,79 +666,6 @@ fig 5.1
 &nbsp;  
 &nbsp; 
 <br/>
-<br/>
-<br/>
-<br/>
-
-## 6 - Função objetivo no pré-treinamento
- 
-A função objetivo no pré-treinamento do modelo **nanoGPT** tem como objetivo principal treinar o modelo para aprender a capturar e modelar padrões em textos de treinamento de maneira não supervisionada.    
-O pré-treinamento do nanoGPT é realizado utilizando uma tarefa chamada de "previsão da palavra seguinte" (next-word prediction).
-
-A função objetivo no pré-treinamento é definida da seguinte maneira: dado um contexto de tokens anteriores, o modelo é treinado para prever qual é o próximo token no texto original. Essa previsão é comparada com o token real que aparece no texto e a diferença entre a previsão e o token real é usada para calcular uma medida de perda, como a entropia cruzada (cross-entropy loss - a função de entropia cruzada é usada como uma medida para calcular a discrepância entre a distribuição de probabilidade prevista pelo modelo e a distribuição de probabilidade real dos dado).  
-
-A fórmula da função de entropia cruzada discreta pode ser expressa da seguinte forma:
-<p align="left">
-<img src="assets/cross-entropy.jpg" width="200"/>
-</p>
-
-Onde:
-- H(p,q) é a entropia cruzada entre as distribuições 
-- p representa a distribuição de probabilidade real dos dados.
-- q representa a distribuição de probabilidade prevista pelo modelo.
-- n é o número de tokens (caracteres) possíveis.
-
-A entropia cruzada é calculada para cada evento possível (caractere, no caso do modelo nanoGPT) e, em seguida, somada para obter a perda total.
-
-Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e treinado para ajustar os pesos de suas camadas, com o objetivo de maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Esse processo é realizado de forma iterativa em um corpus de texto, como os Contos de Machado de Assis.
-
-Ao prever a próxima palavra, o modelo é exposto a uma ampla variedade de contextos e padrões linguísticos, permitindo que ele aprenda a reconhecer e capturar informações sobre estrutura gramatical, sintaxe, semântica e co-ocorrência de palavras.
-
-Após o pré-treinamento, o modelo nanoGPT pode ser ajustado (fine-tuned) para uma tarefa específica usando dados rotulados. Durante o ajuste fino, a função objetivo pode ser alterada para se adequar à tarefa em questão, como classificação de sentimentos, tradução ou geração de texto condicional.
-&nbsp;  
-&nbsp;  
-O método abaixo implementa a função objetivo no treinamento do modelo nanoGPT:
-
-```python
-def get_batch(split):
-    data = train_data if split == 'train' else val_data
-    ix = torch.randint(len(data) - config.max_len, (config.batch_size,))
-    x = torch.stack([torch.from_numpy((data[i:i + config.max_len]).astype(np.int64)) for i in ix])
-    y = torch.stack([torch.from_numpy((data[i+1:i+1+config.max_len]).astype(np.int64)) for i in ix])
-    
-    if device == 'cuda':
-        # pin arrays x,y, que nos permite movê-los para a GPU de forma assíncrona (non_blocking=True)
-        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
-    else:
-        x, y = x.to(device), y.to(device)
-    return x, y
-```
-
-Dado a seguinte sentença: 
-*"A figura é poética, mas "*, a sentença codificada para tokens:&nbsp;  
-
-[26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66,101, 71, 60, 54, 52, 10, 1, 64, 52, 70]
-&nbsp;  
-&nbsp;  
-A função objetivo para o pré-treinamento do modelo nanoGPT segue este padrão: 
-&nbsp;  
-
-```
-quando a entrada é [26](A) o alvo é: 1( )
-quando a entrada é [26, 1](A ) o alvo é: 57(f)
-quando a entrada é [26, 1, 57](A f) o alvo é: 60(i)
-quando a entrada é [26, 1, 57, 60](A fi) o alvo é: 58(g)
-quando a entrada é [26, 1, 57, 60, 58](A fig) o alvo é: 72(u)
-quando a entrada é [26, 1, 57, 60, 58, 72](A figu) o alvo é: 69(r)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69](A figur) o alvo é: 52(a)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52](A figura) o alvo é: 1( )
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1](A figura ) o alvo é: 101(é)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101](A figura é) o alvo é: 1( )
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1](A figura é ) o alvo é: 67(p)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67](A figura é p) o alvo é: 66(o)
-quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura é po) o alvo é: 101(é)
-```
-&nbsp;  
 <br/>
 <br/>
 <br/>
