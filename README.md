@@ -469,12 +469,13 @@ Considerações:
 - **Integração com Outras Técnicas**: A penalidade de frequência pode ser combinada com outras técnicas de refinamento da geração de texto, como a penalidade de temperatura, para obter saídas ainda mais controladas e coerentes.
 <br/>
 <br/>
+
 Implementação no método generate:
 ```python
-  # A penalidade de frequência é utilizada para reduzir a repetição de palavras ou frases no texto gerado.
-  # que já foram produzidas na sessão de geração atual. 
-  if frequency_penalty is not None:
-      logits = self.apply_frequency_penalty(logits, idx_cond, frequency_penalty).to(device)
+    # A penalidade de frequência é utilizada para reduzir a repetição de palavras ou frases no texto gerado.
+    # que já foram produzidas na sessão de geração atual. 
+    if frequency_penalty is not None:
+        logits = self.apply_frequency_penalty(logits, idx_cond, frequency_penalty).to(device)
 ```
 <br/>
 
@@ -509,10 +510,10 @@ Desafios:
 <br/>
 Implementação no método generate:
 ```python
-  # a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, 
-  # seja para aumentá-la ou diminuí-la.
-  if presence_penalty is not None:
-      logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty).to(device)
+    # a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, 
+    # seja para aumentá-la ou diminuí-la.
+    if presence_penalty is not None:
+        logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty).to(device)
 ```
 <br/>
 <br/>
