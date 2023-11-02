@@ -515,8 +515,10 @@ Implementação no método generate:
       logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty).to(device)
 ```
 <br/>
+<br/>
 
 **4 - top_k** 
+
 O `top_k` é uma estratégia de decodificação utilizada para controlar a geração de texto em grandes modelos de linguagem, como o GPT da OpenAI. A abordagem `top_k` visa restringir o espaço de possíveis tokens considerados para a próxima etapa de geração, baseando-se nos `k` tokens mais prováveis.
 <br/><br/>
 Em cada etapa, apenas os 'k' tokens mais prováveis são considerados para a amostragem.
