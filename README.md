@@ -1,10 +1,9 @@
 
 # GPTLab
 
-Este projeto foi baseado no trabalho do Anderej Karpathy [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY)
-Foram realizadas adaptações para tornar o aprendizado do modelo mais didático. O objetivo deste trabalho é ajudar as pessoas a se familiarizarem com a estrutura de modelos de linguagem autoregressivos, além de introduzir noções básicas sobre tensores, PyTorch e redes neurais. Muitas dessas alterações foram baseadas no código-fonte localizado em [huggingface/transformers PyTorch implementation](https://github.com/huggingface/transformers/blob/main/src/transformers/models/gpt2/modeling_gpt2.py)
+Este projeto foi baseado no trabalho do Anderej Karpathy [“Let's build GPT: from scratch”](https://www.youtube.com/watch?v=kCc8FmEb1nY), mas foi adaptado para oferecer um aprendizado mais prático e didático do modelo. O principal objetivo deste trabalho é ajudar as pessoas a entenderem a estrutura dos modelos de linguagem autoregressivos. Também introduz conceitos básicos sobre tensores, PyTorch e redes neurais. Grande parte dessas alterações foi inspirada no código-fonte encontrado em [huggingface/transformers PyTorch implementation](https://github.com/huggingface/transformers/blob/main/src/transformers/models/gpt2/modeling_gpt2.py)
 
-Se você não é um profissional do campo de deep learning e deseja apenas compreender as arquiteturas desses novos LLMs (Modelos de Linguagem de Grande Escala), a maneira mais rápida de começar é treinar um modelo GPT de tamanho 200k (treinamento em CPU) ou de tamanho 10M (treinamento em GPU com 4 GB), utilizando como corpus as obras de Machado de Assis ou de Shakespeare.
+Se você não é especialista em deep learning mas deseja entender as arquiteturas desses Modelos de Linguagem de Grande Escala (LLMs), a forma mais rápida de começar é treinar um modelo nanoGPT de tamanho 200k (usando CPU) ou 10M (usando uma GPU de 4 GB). Para o corpus de treinamento, você pode utilizar as obras de Machado de Assis ou de Shakespeare.
 
 *Disclaimer: Este artigo foi escrito com o apoio do ChatGPT.*
 
@@ -47,23 +46,23 @@ OBS: Flash Attention: verificar se versão do PyTorch tem suporte.
 <br/>
 
 ## 2 - Tokenizer
-Nós utilizamos um tokenizador de nível de caractere neste projeto que opera no nível de caracteres individuais. Em contraste com a tokenização em nível de palavra, em que o texto é dividido em palavras ou subpalavras individuais, a tokenização em nível de caractere divide o texto em seus caracteres constituintes.
+Neste projeto, empregamos um tokenizador em nível de caractere, o qual opera individualmente com cada letra do texto. É uma abordagem diferente da tokenização em nível de palavra, que divide o texto em palavras ou subpalavras separadas. O tokenizador em nível de caractere separa o texto em cada uma de suas letras.
 
-Um tokenizador de nível de caractere divide o texto em caracteres individuais e representa cada caractere como um token separado. Ele oferece uma representação refinada do texto e pode lidar com palavras raras ou não vistas de forma eficaz, mas pode perder a semântica no nível da palavra e aumentar o comprimento da sequência.
+Esse tipo de tokenizador divide o texto em caracteres únicos, representando cada letra como um token diferente. Isso proporciona uma representação mais detalhada do texto e é capaz de lidar eficientemente com palavras raras ou não usuais. No entanto, pode não capturar a semântica na escala da palavra e tende a aumentar o comprimento da sequência.
 
-Uma vantagem de utilizar este tipo de tokenizador é que o número de parâmetros da matriz embeddings é menor. 
+Uma grande vantagem de usar esse tipo de tokenizador é que ele reduz o número de parâmetros na matriz de incorporação. 
 
 ```python
 wte = nn.Embedding(config.vocab_size, config.n_embd)
 ```
 
-Quando utilizamos o treinamento em GPU, o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 384. O total de parâmetros é 115x384 = 44.160. O número total de parâmetros deste modelo é 10.683.264, então a camada de embeddings tomaria 0,41% deste total. 
+Ao usar o treinamento em GPU, temos um vocabulário de 115 e a dimensão do vetor de embeddings é de 384. Isso resulta em um total de 44.160 parâmetros, calculados a partir de 115x384. O número total de parâmetros deste modelo é de 10.683.264, então a camada de embeddings se traduz em apenas 0,41% deste valor total.
 
-Se utilizássemos o tokenizador do GPT-2 que usa o algorítmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257 o que aumentaria bastante o tamanho do modelo em 50257x384 = 19.298.688 e a camada embeddings tomaria 64,46% do tamanho do modelo. 
+Se optarmos pelo uso do tokenizador do GPT-2, que usa o algoritmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, iríamos lidar com um vocabulário consideravelmente maior, de 50.257 palavras. Isso implicaria num aumento significativo no tamanho do modelo para 19.298.688 parâmetros, provenientes de 50.257x384. Nesse caso, a camada de embeddings seria responsável por 64,46% do tamanho do modelo.
 
-Em resumo, é melhor utilizarmos um tokenizador em nível de caracteres para diminuirmos o consumo de memória e o tempo de processamento.
+Portanto, a melhor alternativa é utilizar um tokenizador em nível de caracteres, pois isso reduz o consumo de memória e o tempo de processamento.
 
-Mas o nosso objetivo é permitir o treinamento deste modelo para a maioria dos usuário que tem um computador comum, sem uma poderosa GPU que custa muito dinheiro.
+O nosso objetivo, no entanto, é possibilitar que a maioria dos usuários, mesmo aqueles com um computador comum e sem uma GPU poderosa (que geralmente têm um custo elevado), possam treinar este modelo.
 
 <br/><br/>
 <br/>
@@ -108,10 +107,10 @@ O **nanoGPT** é baseado no modelo GPT, que é um modelo de linguagem baseado em
 fig 3.1
 &nbsp;  
 &nbsp;  
-O **nanoGPT** se baseia na arquitetura do Transformer e a estende usando aprendizado não supervisionado em uma quantidade de dados de texto. Este processo é conhecido como pré-treinamento. Durante o pré-treinamento, o nanoGPT é exposto a um corpus de texto, como os contos de Machado de Assis ou a uma parte da obra de Shakespeare, e aprende a prever o próximo caractere em um determinado contexto. Ao fazer isso, o modelo aprende os padrões estatísticos e as estruturas sintáticas da linguagem humana.
+O **nanoGPT** usa como base a arquitetura do Transformer, expandindo-a ao aplicar aprendizado não supervisionado a grandes volumes de dados textuais, em um processo denominado pré-treinamento. Durante esse pré-treinamento, o nanoGPT é exposto a um conjunto específico de textos, como as obras de Machado de Assis ou uma parte específica da obra de Shakespeare, e tem como tarefa prever o próximo caractere de acordo com o contexto fornecido. Através dessa tarefa, o modelo adquire conhecimento sobre os padrões estatísticos e as estruturas sintáticas presentes na linguagem humana.
 &nbsp;  
 <br/>
-Abaixo uma figura que descreve a arquitetura do modelo **nanoGPT** detalhadamente. Note que na saída de cada módulo tem a informação das dimensões dos tensores. Você poderá utilizar este arquivo [GPT_model.pptx](https://github.com/wmelo52/GPTLab/blob/master/GPT_model.pptx) para acompanhar a explicação deste modelo logo mais abaixo.
+A seguir está uma figura descrevendo detalhadamente a arquitetura do modelo **nanoGPT**. Observe que cada módulo apresenta informações sobre as dimensões dos tensores na sua saída. Você pode utilizar este arquivo [GPT_model.pptx](https://github.com/wmelo52/GPTLab/blob/master/GPT_model.pptx) para acompanhar a explicação deste modelo nos próximos parágrafos.
 <br/><br/>
 
 
@@ -151,7 +150,6 @@ nanoGPTModel(
 &nbsp;  
 <br/> <br/>
 <br/>
-<br/>
 
 
 <br/>
@@ -160,14 +158,14 @@ nanoGPTModel(
 &nbsp; 
 ***Embeddings Posicional e Word Embeddings***
 
-No decodificador do modelo GPT são usados dois tipos de embeddings: Embeddings Posicional e Word Embeddings (embeddings de palavras).
+No decodificador do modelo nanoGPT são usados dois tipos de embeddings: Embeddings Posicional e Word Embeddings (embeddings de palavras).
 
 **Embeddings Posicional (wpe):**<br/>
-As Embeddings Posicional são usadas para codificar a posição relativa de cada palavra na sequência de entrada. Elas são necessárias porque o modelo GPT não possui informações explícitas de posição em suas entradas. Essas embeddings são adicionadas aos embeddings de palavras para fornecer ao modelo informações sobre a ordem das palavras na sequência.
+As Embeddings Posicional são usadas para codificar a posição relativa de cada palavra na sequência de entrada. Elas são necessárias porque o modelo nanoGPT não possui informações explícitas de posição em suas entradas. Essas embeddings são adicionadas aos embeddings de palavras para fornecer ao modelo informações sobre a ordem das palavras na sequência.
 
-As Embeddings Posicional geralmente são codificadas como vetores numéricos que possuem um padrão específico para cada posição que capturam a posição relativa.
+Normalmente, as Embeddings Posicionais são representadas como vetores numéricos com padrões específicos para cada posição, capturando assim a posição relativa das palavras.
 
-Dessa forma, as Embeddings Posicional ajudam o modelo a entender a ordem sequencial dos tokens e permitem que ele capture dependências de longo alcance.
+Dessa forma, as Embeddings Posicionais auxiliam o modelo a compreender a ordem sequencial dos tokens e permitem que ele capture dependências de longo alcance.
 
 No decodificador nanoGPT, as Embeddings Posicional são aprendidas durante o treinamento do modelo.
 
@@ -197,8 +195,7 @@ Este módulo é implementado pelo framework PyTorch (`nn.Dropout(0,1)`) e é uti
 
 No decodificador do modelo nanoGPT, a camada de normalização refere-se à camada de normalização por camada (Layer Normalization) aplicada antes do módulo de self-attention e do módulo de MLP - Multilayer perceptron e antes do módulo MHA (Multi-Head Attention).
 
-Essa camada desempenha um papel importante na estabilização do treinamento e na melhoria do desempenho do modelo.
-A camada de normalização é uma técnica utilizada em redes neurais para normalizar os valores de ativação em cada camada. Ela ajuda a mitigar o problema da distribuição não uniforme das ativações, tornando o treinamento mais estável e eficiente.
+Essa camada desempenha um papel importante na estabilização do treinamento e na melhoria do desempenho do modelo. A camada de normalização é uma técnica utilizada em redes neurais para normalizar os valores de ativação em cada camada. Ela ajuda a mitigar o problema da distribuição não uniforme das ativações, tornando o treinamento mais estável e eficiente.
 
 Especificamente, a normalização por camada calcula as estatísticas de média e variância dos valores de ativação em uma camada específica e, em seguida, normaliza os valores subtraindo a média e dividindo pelo desvio padrão. Isso é feito para cada unidade de ativação individualmente. A fórmula matemática para a normalização por camada é a seguinte:
 ```
@@ -214,8 +211,10 @@ Onde:
 
 OBS: `a_2` e `b_2` são parâmetros aprendido durante o pré-treinamento de dimenão 384.
 
-A normalização por camada tem o efeito de centralizar os valores de ativação em torno de zero e escalá-los para uma distribuição de variância unitária. Isso é benéfico para o treinamento do modelo, pois ajuda a evitar o desvanecimento ou explosão do gradiente, facilita a propagação dos gradientes e melhora a generalização do modelo.
-Além disso, a normalização por camada é aplicada independentemente para cada exemplo de entrada na dimensão do lote, o que permite que o modelo se beneficie de uma normalização adaptativa que leva em consideração as estatísticas específicas de cada exemplo.
+A normalização por camada tem o efeito de centralizar os valores de ativação em torno de zero e escalá-los para uma distribuição com variância unitária. Isso traz benefícios para o treinamento do modelo, pois ajuda a evitar o problema de gradiente desvanecido ou explosivo, facilita a propagação dos gradientes e melhora a capacidade do modelo de generalizar.
+
+Além disso, a normalização por camada é aplicada independentemente para cada exemplo de entrada na dimensão do lote, o que permite que o modelo se beneficie de uma normalização adaptativa que leva em consideração as estatísticas específicas de cada exemplo. Isso é especialmente relevante em cenários onde existem variações significativas nos dados de entrada, garantindo assim que o modelo esteja ajustado de forma adequada para diferentes casos.
+
 ```python
 class LayerNorm(nn.Module):
     "Constroi um módulo layernorm."
@@ -232,17 +231,15 @@ class LayerNorm(nn.Module):
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2 
 ```
 
-Em resumo, a camada de normalização no decodificador do GPT é uma etapa fundamental para garantir a estabilidade do treinamento, melhorar o fluxo de informação e a capacidade de representação do modelo.
-<br/><br/><br/>
+<br/><br/>
 
 ***Conexão Residual***<br/>
 
-No decodificador do GPT, existem várias camadas de self-attention e camadas de feedforward para gerar as previsões de saída. A cada camada, a entrada passa por uma série de transformações não lineares para processar e extrair informações relevantes. No entanto, à medida que as informações fluem através dessas camadas, pode haver perda ou diluição das informações originais.
+A conexão residual no decodificador do nanoGPT é usada como um caminho alternativo nos módulos Multi-Head Attention (`MHA`) e MultiLayer Perceptron (`MLP`).
 
-A conexão residual é introduzida para resolver esse problema. A ideia básica é adicionar a entrada original (ou seja, a saída da camada anterior) às informações processadas na camada atual. Isso é feito através da soma direta dos vetores de ativação da camada anterior e da camada atual. Em termos matemáticos, se a saída da camada anterior é representada por H e a saída da camada atual é representada por F, a conexão residual é simplesmente H + F.
-Essa conexão residual permite que as informações originais fluam mais facilmente através das camadas do decodificador, sem perdas significativas. Ela também ajuda a mitigar o problema do desvanecimento do gradiente durante o treinamento, permitindo que os gradientes se propaguem mais eficientemente pelas camadas.
+Essa conexão residual permite que as informações fluam diretamente do bloco anterior para o bloco seguinte, contornando os módulos de atenção e MLP. Isso é feito através da adição dos valores de ativação do bloco anterior aos valores de ativação do bloco atual.
 
-A conexão residual no decodificador do nanoGPT é utilizada como um caminho alternativo nos módulos MHA (Multi-Head Attention) e MLP (MultiLayer Perceptron)
+A conexão residual é benéfica porque ajuda a mitigar o problema de desvanecimento do gradiente, permitindo que as informações relevantes sejam preservadas e transmitidas através das camadas do modelo. Além disso, ela facilita a otimização do modelo, permitindo que o gradiente seja propagado mais facilmente durante o treinamento.
 
 <br/><br/>
 ***O que é self-attention?***<br/><br/>
@@ -263,17 +260,27 @@ O mecanismo de self-attention opera em três componentes principais: consultas (
 O processo de self-attention ocorre em três etapas:
 <br/><br/>
 
-**Etapa 1:** Geração de Consultas (q), Chaves (k) e Valores (v): Cada palavra na sequência de entrada é mapeada para três representações diferentes - uma consulta (q), uma chave (k) e um valor (v). Essas representações são obtidas por projeções lineares da representação de entrada (x).
+**Etapa 1 - Vetores de Consulta, Chave e Valor** <br/>
+Geração de Consultas (q), Chaves (k) e Valores (v): Cada palavra na sequência de entrada é mapeada para três representações diferentes - uma consulta (q), uma chave (k) e um valor (v). Essas representações são obtidas por projeções lineares da representação de entrada (x).
 
 Teremos uma matriz de chave(**K**), matriz de consulta(**Q**) e uma matriz de valor(**V**) para gerar os vetores k, q, v. 
 
-Essas matrizes (Q, K, V) são aprendidas durante o treinamento.
+As matrizes de projeção (**Q**, **K**, **V**) são aprendidas durante o treinamento. Isso significa que o modelo tem a capacidade de ajustar essas projeções para melhorar a performance na tarefa específica.
 
-Essa projeção tem uma finalidade: aprendizado de relações não lineares. 
-A projeção permite que o modelo aprenda relações não lineares entre os elementos da entrada. Através das operações lineares na projeção, o modelo pode mapear os vetores de consulta, chave e valor para espaços de características diferentes, o que pode ajudar a modelar relações complexas e capturar dependências de longo alcance. Isso é particularmente importante em tarefas que exigem um entendimento mais sofisticado das relações entre os elementos da entrada, como tradução automática ou compreensão de linguagem natural.
+A transformação linear (ou projeção) permite que o modelo seja mais flexível. Em vez de operar diretamente nos vetores de entrada, o modelo tem a liberdade de projetá-los em um espaço onde os cálculos de atenção sejam mais significativos.
+
+Aqui estão as principais finalidades do uso da projeção no mecanismo de self-attention:<br/>
+**Transformação de Espaço**: As projeções permitem transformar as representações de entrada para diferentes espaços. Por exemplo, a entrada original pode estar em um espaço dimensional 
+d, mas queremos representações de Query, Key e Value em um espaço diferente, digamos dk
+ . As matrizes de projeção realizam essa transformação.
+
+**Diversidade de Representações**: Ao projetar a entrada para criar Q, K e V, estamos essencialmente criando diferentes representações da entrada original. Isso permite que o mecanismo de atenção capture diferentes tipos de interações e relacionamentos na sequência.
+
+**Adição de Capacidade ao Modelo**: Introduzir uma transformação linear adiciona parâmetros treináveis ao modelo. Isso pode potencialmente permitir ao modelo aprender representações mais complexas e ricas dos dados.
 <br/><br/>
 
-**Etapa 2:** Ver figura acima "*Scaled Dot-Product Attention*"
+**Etapa 2 - Cálculo de Scores de Atenção**<br/>
+ Ver figura 4.1 acima "*Scaled Dot-Product Attention*"
 
 A segunda etapa é calcular a pontuação (score), ou seja, vamos multiplicar a matriz de consulta com a matriz de chave. [Q x K.t]
 
@@ -281,17 +288,18 @@ Cálculo dos Pesos de Atenção: Os pesos de atenção são calculados através 
 
 Desta vez a grande diferença é que usamos uma máscara com Multi-Head Attention.
 
-**Por que máscara?**<br/>
-A máscara na camada self-attention do decodificador do modelo GPT (Generative Pre-trained Transformer) é usada para garantir que os tokens futuros não sejam considerados durante a geração de cada palavra em uma sequência. Essa máscara é uma matriz triangular superior, onde todos os elementos abaixo da diagonal principal são definidos como um, e os elementos acima da diagonal são definidos como infinito negativo. Essa máscara garante que as palavras subsequentes à palavra atual não influenciem a atenção durante a geração da palavra atual.
+*Por que máscara?*<br/>
+Devido à natureza autoregressiva do GPT, é fundamental garantir que, ao prever uma palavra, o modelo só considere palavras anteriores e não as subsequentes. Para isso, o nanoGPT utiliza uma "máscara causal" no mecanismo de self-attention, que efetivamente impede que o modelo atenda a palavras futuras na sequência.
 
-Ao aplicar essa máscara, o modelo GPT garante que cada palavra seja gerada de forma autônoma, dependendo apenas das palavras anteriores. Isso é fundamental para garantir a coerência e a fluidez na geração de sequências de texto, permitindo que o modelo produza saídas autoregressivas que fazem sentido e mantêm uma estrutura gramatical correta.
-
-Em seguida, é aplicada uma função softmax aos resultados para obter os pesos normalizados.
+**Etapa 3 - Normalização dos Scores**<br/>
+Os scores são então passados por uma função softmax, que os transforma em probabilidades que somam 1. Isso garante que palavras mais relevantes para a predição atual tenham maior peso.
 <br/><br/>
 
-**Etapa 3:** Então, multiplique a attention (att) com o vetor de valores (v).
+**Etapa 4 - Cálculo da Saída do Self-Attention**<br/>
+Os scores normalizados (att) são usados para ponderar os vetor de valores (v). O resultado é um vetor ponderado que captura informações relevantes de todas as palavras anteriores na sequência.
 
-Combinação Linear Ponderada dos Valores: Os pesos de atenção são utilizados para ponderar os valores correspondentes. As palavras na sequência são combinadas linearmente com base nos pesos calculados. O resultado é uma representação contextualizada para cada palavra, levando em consideração as relações com as outras palavras da sequência.
+O resultado é uma representação contextualizada para cada palavra, levando em consideração as relações com as outras palavras da sequência.
+
 ```python
 def attention(q, k, v, mask_att, attn_dropout, mask=None, dropout=None):   
     # Suspeitamos que para grandes valores de n_embd, os produtos escalares crescem em magnitude, 
@@ -308,18 +316,22 @@ def attention(q, k, v, mask_att, attn_dropout, mask=None, dropout=None):
 ```
 <br/>
 
-**Etapa 4:** Assim que tivermos isso, passaremos por uma camada de concatenação em que é feito por esta linha de código em python:
+**Etapa 5 - Concatenação**<br/>
+Assim que tivermos isso, passaremos por uma camada de concatenação em que é feito por esta linha de código em python:
 ```python
 z = z.transpose(1, 2).contiguous().view(B, T, C)
 ```
+<br/>
 
+**Etapa 6 - projeção C Linear**<br/>
 Depois passaremos por uma camada de projeção C Linear. Isso forma a saída da Multi-Head Attention.
+A camada C Linear na saída do mecanismo de self-attention serve para transformar a representação ponderada resultante em um espaço dimensional adequado e adicionar mais capacidade ao modelo. 
+ Introduzir essa transformação linear adiciona mais parâmetros ao modelo, o que pode ajudar o modelo a aprender representações mais ricas e complexas.
+<br/>
+<br/>
 
-Esse processo de self-attention é aplicado a todas as palavras da sequência de entrada simultaneamente, em paralelo, permitindo que o modelo capture as interações globais entre as palavras.
+Em resumo, o mecanismo de self-attention no decodificador do nanoGPT permite que o modelo considere todas as palavras anteriores na sequência de forma ponderada ao gerar uma nova palavra, garantindo que a saída seja contextualmente relevante e coerente.
 
-O mecanismo de self-attention no decodificador do modelo GPT ajuda o modelo a entender as dependências e as relações entre as palavras em uma sequência, permitindo uma melhor representação das informações e uma geração mais precisa e coerente de texto.
-
-À medida que o modelo processa cada palavra, o mecaismo de self-attention permite que ele olhe para outras posições na sequência de entrada em busca de pistas. Ele criará um vetor baseado na dependência de cada palavra com a outra. A saída do módulo de self-attention é uma representação contextual de cada entrada (wke + wte), ver figura acima.
 
 <br/><br/>
 **MLP - Multilayer perceptron**<br/><br/>
@@ -329,21 +341,25 @@ fig 4.2
 </p>
 <br/>
 
-A camada Feed Forward é uma camada totalmente conectada que opera de forma independente em cada posição da sequência de entrada. Ela consiste em duas camadas lineares consecutivas, separadas por uma função de ativação não linear, uma função new [GELU](https://arxiv.org/abs/1606.08415) (Gaussian Error Linear Unit).
+No contexto dos Transformers e, consequentemente, do nanoGPT, o MLP é usado após o mecanismo de self-attention em cada bloco do decodificador. Vamos entender suas características e finalidade:
+
+1. **Estrutura Básica**: O MLP no modelo nanoGPT é composto por duas camadas lineares (ou densas) separadas por uma função de ativação não-linear, uma função new [GELU](https://arxiv.org/abs/1606.08415) (Gaussian Error Linear Unit).
 
 A função new Gelu é definida matematicamente como:
 ```python
 gelu(x) = 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
 ```
-O propósito da camada Feed Forward é aplicar transformações não lineares aos dados de entrada, permitindo que o modelo capture relações mais complexas e não lineares entre as palavras. Essa camada ajuda a melhorar a representação e a capacidade de aprendizado do modelo.
 
-A primeira camada linear da camada Feed Forward projeta os recursos de entrada em um espaço de dimensão intermediária, geralmente maior. A função de ativação new GELU é aplicada a esses recursos intermediários, introduzindo não linearidade ao mapeamento.
+2. **Aumento da Capacidade do Modelo**: O MLP adiciona parâmetros adicionais ao modelo, permitindo-lhe aprender representações mais complexas. Enquanto o mecanismo de self-attention ajuda o modelo a entender as relações entre diferentes posições em uma sequência, o MLP permite ao modelo aprender transformações complexas dessas representações.
 
-Em seguida, a segunda camada linear reduz a dimensão do espaço intermediário de volta à dimensão original, produzindo a saída da camada Feed Forward. Essa segunda projeção linear permite que a camada aprenda uma combinação ponderada dos recursos intermediários para gerar a representação final.
+3. **Transformações Não-lineares**: Uma das principais funções do MLP é introduzir não-linearidades no modelo. Os Transformers, por natureza, consistem em várias operações lineares, como multiplicação de matrizes e somas. Sem o MLP e sua função de ativação não-linear, o modelo seria essencialmente uma série de operações lineares, limitando sua capacidade de aprender e representar funções complexas.
 
-A aplicação das transformações não lineares nas camadas lineares consecutivas ajuda o modelo a capturar padrões complexos nos dados de entrada, fornecendo uma maior flexibilidade na representação das informações.
+4. **Feed-forward**: Muitas vezes, o MLP nos Transformers é referido como a camada "feed-forward". Isso porque, diferentemente do mecanismo de self-attention que considera as relações entre todos os tokens, o MLP opera em cada posição (ou token) de forma independente. Em outras palavras, ele aplica a mesma transformação feed-forward a cada posição separadamente.
 
-A camada Feed Forward no decodificador do modelo GPT é essencial para aprimorar a capacidade de aprendizado e a expressividade do modelo, permitindo que ele capture relações mais complexas e melhore a qualidade das previsões de sequência geradas pelo decodificador.
+5. **Dimensionalidade**: No nanoGPT e em outros Transformers, o MLP geralmente começa com uma camada que aumenta a dimensionalidade (chamada de "expansão") e depois a reduz novamente. Isso permite que o modelo crie e depois condense representações ricas.
+
+Em resumo, o MLP no decodificador do nanoGPT serve para introduzir não-linearidades e aprender transformações complexas nas representações produzidas pelo mecanismo de self-attention. Ele complementa o mecanismo de self-attention, permitindo que o nanoGPT modele efetivamente tanto as relações entre tokens quanto as transformações complexas dessas relações.
+
 ```python
 class MLP(nn.Module):
 
@@ -363,80 +379,31 @@ class MLP(nn.Module):
 
 <br/><br/>  
 
-**Linear Head e Softmax**<br/>
-Por fim, criamos uma camada linear com comprimento igual ao número de palavras no corpus alvo total e uma função softmax com ela para obter a probabilidade de cada palavra.
+**Linear Head**<br/>
 
-A camada Linear Head, localizada na parte final do decodificador do modelo nanoGPT, é uma camada linear que precede a camada softmax. Sua função principal é projetar a saída do decodificador em um espaço de características compatível com o tamanho do vocabulário.
+A camada "Linear Head" no decodificador do modelo nanoGPT é a camada final responsável por produzir as predições do modelo (logits).
 
-O decodificador do GPT gera uma distribuição de probabilidade sobre o vocabulário para prever a próxima palavra em uma sequência autoregressiva. A camada Linear Head recebe as representações finais do decodificador e realiza uma transformação linear nelas.
+**Transformação Linear**: A "Linear Head" é uma camada densa ou linear que transforma as representações ocultas (ou embeddings) produzidas pelo bloco de decodificador do nanoGPT em scores (logits) para cada token possível no vocabulário.
 
-Mais especificamente, a camada Linear Head possui um conjunto de neurônios (ou unidades) igual ao tamanho do vocabulário utilizado. Cada neurônio está associado a uma palavra específica do vocabulário. A camada linear realiza uma multiplicação matricial entre as representações finais e os pesos da camada Linear Head, seguida de uma adição do bias correspondente.
+Em resumo, a camada `Linear Head` no decodificador do nanoGPT é a camada de saída que transforma as representações internas do modelo em predições concretas para o próximo token na sequência. Ela desempenha um papel crucial tanto no treinamento (ajustando seus pesos para minimizar o erro) quanto na inferência (gerando novos textos).
 
-O resultado dessa operação é uma pontuação (ou logits) para cada palavra do vocabulário, indicando a probabilidade relativa de cada palavra ser a próxima na sequência gerada pelo decodificador.
-
-A camada softmax, que segue a camada Linear Head, é responsável por transformar as pontuações (logits) em uma distribuição de probabilidade normalizada. A função softmax calcula a exponencial das pontuações e normaliza os valores resultantes pela soma de todas as exponenciais, atribuindo probabilidades a cada palavra do vocabulário.
-
-Em resumo, a camada Linear Head no decodificador do modelo GPT realiza a projeção linear das representações finais para pontuações associadas a cada palavra do vocabulário. Essas pontuações são então passadas pela camada softmax para obter uma distribuição de probabilidade sobre o vocabulário, permitindo a geração da próxima palavra na sequência.
 <br/><br/>
 <br/>  
-
-**Generate**<br/>
-Por fim,  O código Python abaixo realiza uma amostragem multinomial usando a biblioteca PyTorch. Vamos analisá-lo em detalhes:
-```python
-idx_next = torch.multinomial(probs, num_samples=1)
-```
-- **torch.multinomial**: É uma função da biblioteca PyTorch que realiza amostragem multinomial. Ela recebe dois argumentos principais: **probs** e **num_samples*.<br/>
-- **probs**: É um tensor que contém as probabilidades de cada evento na distribuição multinomial. Essas probabilidades devem ser não negativas e a soma de todas elas deve ser igual a 1.
-
-- **num_samples**: É um inteiro que define quantas amostras serão obtidas na amostragem multinomial. No caso do código fornecido, é especificado como 1, o que significa que será retornada apenas uma amostra.
-
-O resultado dessa chamada de função é atribuído à variável `idx_next`. A variável `idx_next` conterá o índice da palavra selecionada na distribuição multinomial, ou seja, a palavra que foi amostrada com base nas probabilidades fornecidas.
-
-Em resumo, o código realiza a amostragem multinomial a partir de um tensor de probabilidades `probs` usando a função `torch.multinomial`. O resultado é um índice correspondente à palavra amostrada, que é armazenado na variável `idx_next`.
-
-O arquivo [teste_multinomial_dist.py](https://github.com/wmelo52/GPTLab/blob/master/teste_multinomial_dist.py) dá uma boa intuição de como funciona esta amostragem de uma distribuição multinomial.
-&nbsp;  
-&nbsp;  
-O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere ([inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py)).
-
-![nanoGPT](assets/dist_probs_char.png)
-fig 4.3
-&nbsp;  &nbsp;  <br/><br/><br/><br/> 
-<br/>
-<br/>
 
 
 ## 5 - [Estratégias de decodificação em grandes modelos de linguagem](https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html)
 
-Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 4.3.
+Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 5.1.
 
-A decodificação é o processo pelo qual um modelo de linguagem gera sequências de texto com base nos logits (saídas não normalizadas) produzidos pelo modelo. Existem várias estratégias de decodificação que podem influenciar a qualidade e a diversidade do texto gerado. Aqui estão algumas das estratégias mais comuns:
+A decodificação é o processo pelo qual um modelo de linguagem gera sequências de texto com base nos logits (saídas não normalizadas) produzidos pelo modelo. 
 
-**Decodificação Gulosa (Greedy Decoding):**
-Em cada etapa, o token com a maior probabilidade (logit máximo) é selecionado.
-Esta estratégia é determinística e tende a produzir saídas consistentes, mas pode não ser ideal para capturar a diversidade ou evitar repetições (`temperatura=0 ou torch.argmax(probs, dim=1)`).
+### Generate<br/>
+A função `generate` é fundamental em modelos generativos como o nanoGPT, sendo responsável pela produção de sequências de texto a partir de uma entrada ou prompt fornecido.
 
-**Decodificação por Amostragem (Sampling Decoding):**
-Em vez de escolher o token mais provável, um token é amostrado de acordo com as probabilidades dos logits.
-Isso introduz aleatoriedade e pode resultar em saídas mais diversas.
-A "temperatura" é um parâmetro que pode ser ajustado para influenciar a distribuição. Uma temperatura alta (e.g., >1) torna a amostragem mais uniforme (mais aleatória), enquanto uma baixa (e.g., <1) torna a saída mais determinística.
-
-**Decodificação Top-k:**
-Em cada etapa, apenas os 'k' tokens mais prováveis são considerados para a amostragem.
-Isso restringe a amostragem a um subconjunto de tokens, evitando escolhas muito improváveis.
-
-**Decodificação com Penalidades:**
-Durante a decodificação, certas penalidades (como penalidade de frequência ou presença) podem ser aplicadas aos logits para encorajar ou desencorajar a geração de certos tokens.
-Isso pode ser usado para guiar o modelo em direção a saídas mais desejadas ou para evitar repetições e outros problemas.
-
-**Decodificação por Limite de Duração:**
-Um limite pode ser definido para o número de tokens ou palavras que o modelo pode gerar. Isso pode ser útil para controlar a duração da saída.
-
-A escolha da estratégia de decodificação depende do caso de uso específico. Por exemplo, para tarefas criativas onde a diversidade é valorizada, a amostragem ou Top-k podem ser preferíveis. Por outro lado, para tarefas onde a coerência e precisão são críticas, a decodificação gulosa (temperatura=0) podem ser mais apropriada.
-
+Existem várias estratégias de decodificação que podem influenciar a qualidade e a diversidade do texto gerado. Aqui estão algumas das estratégias implementadas no método **generate**:
 <br/>
 
-### Temperatura<br/>
+**1 - Temperatura**<br/>
 No contexto dos modelos de Linguagem de Múltiplas Tarefas (LLM), como o ChatGPT, o parâmetro "temperatura" é uma configuração que controla a aleatoriedade e a suavidade das respostas geradas pelo modelo.
 
 O parâmetro temperatura é usado durante o processo de amostragem para equilibrar a exploração e a explotação do modelo. Quando a temperatura é alta, as respostas geradas pelo modelo tendem a ser mais aleatórias, diversificadas e surpreendentes. Por outro lado, quando a temperatura é baixa, as respostas são mais determinísticas, coerentes e previsíveis.
@@ -448,6 +415,7 @@ Por exemplo, quando a temperatura é definida como 0 (zero), a amostragem é tot
 <br/>
 
 **Explicando o conceito visualmente.**
+
 A escala de temperatura regula a variabilidade das respostas geradas pelo modelo. Ela influencia a entropia da distribuição de probabilidade usada na seleção da próxima palavra, determinando se essa palavra será mais surpreendente ou previsível. Tecnicamente, isso é alcançado ao dividir o vetor logit pelo valor representado por 'T', que simboliza a temperatura. Em seguida, a função softmax é aplicada ao resultado.
 
 $\large P_i=\frac{e^{\frac{logit_i}T}}{\sum_{k=1}^n e^{\frac{logit_k}T}}$
@@ -468,30 +436,15 @@ fonte: https://medium.com/mlearning-ai/softmax-temperature-5492e4007f71
 <br/>
 &nbsp;  
 
-**Resposta do GPT-4 à pergunta: <span style="color:#FA8072">Explique como funciona a temperatura nos Grandes Modelos de Linguagem?</span>**<br/>
-A "temperatura" é um conceito utilizado em Grandes Modelos de Linguagem (como o GPT-4) durante a etapa de amostragem de respostas. Ela tem um papel fundamental em determinar a natureza das respostas que o modelo fornece. Aqui está uma explicação detalhada:
-
-1. **Amostragem de Respostas**: Depois que o modelo avalia uma entrada e calcula as probabilidades para cada palavra possível como a próxima palavra, ele seleciona a próxima palavra com base nessas probabilidades. Isso é chamado de "amostragem".
-
-2. **Temperatura como um Fator de Escala**: A temperatura é basicamente um fator de escala aplicado às probabilidades calculadas antes da amostragem. Ela afeta a distribuição de probabilidade das palavras.
-
-3. **Efeitos da Temperatura**:
-   - **Temperatura Alta (e.g., > 1)**: Aumentar a temperatura torna a distribuição de probabilidade mais uniforme. Isso significa que o modelo é mais propenso a gerar respostas diversificadas e, por vezes, inesperadas. Em temperaturas muito altas, as respostas podem até se tornar aleatórias.
-   - **Temperatura Baixa (e.g., < 1)**: Diminuir a temperatura torna a distribuição de probabilidade mais "afiada". Isso faz com que o modelo favoreça palavras com maior probabilidade e seja menos propenso a produzir respostas inesperadas. Em temperaturas muito baixas (próximas de 0), o modelo tende a repetir as palavras ou frases mais prováveis, podendo tornar-se excessivamente determinístico.
-
-4. **Aplicações Práticas**:
-   - Em situações onde é desejável obter respostas mais criativas ou diversas, pode-se usar uma temperatura mais alta.
-   - Em situações onde se deseja uma resposta mais confiável e menos propensa a erros, pode-se usar uma temperatura mais baixa.
-
-5. **Balanceamento**: Encontrar a temperatura certa é uma questão de balanceamento entre criatividade e confiabilidade. Dependendo do uso específico, pode-se ajustar a temperatura para obter o tipo de resposta desejada.
-
-Em resumo, a temperatura é uma ferramenta que permite ajustar a "ousadia" ou "cautela" do modelo em suas respostas, influenciando a variabilidade e a previsibilidade das saídas geradas.
-<br/>
+Implementação no método generate:
+```python
+   logits = logits[:, -1, :] / temperature
+```
 <br/>
 
-### Penalidade de Frequência
+**2 - Penalidade de Frequência**
 
-A penalidade de frequência é uma técnica aplicada em grandes modelos de linguagem (como o GPT) com o objetivo de reduzir a repetição de palavras ou frases no texto gerado. Em contextos de geração de texto, especialmente quando são solicitadas sequências mais longas, o modelo pode começar a repetir certas palavras ou frases, resultando em um texto menos coerente ou monótono. A penalidade de frequência serve para mitigar esse problema.
+A penalidade de frequência é uma técnica aplicada em grandes modelos de linguagem com o objetivo de reduzir a repetição de palavras ou frases no texto gerado. Em contextos de geração de texto, especialmente quando são solicitadas sequências mais longas, o modelo pode começar a repetir certas palavras ou frases, resultando em um texto menos coerente ou monótono. A penalidade de frequência serve para mitigar esse problema.
 
 Funcionamento básico da penalidade de frequência:
 
@@ -514,12 +467,18 @@ Considerações:
 - **Balanceamento**: É importante balancear a penalidade. Uma penalidade muito alta pode fazer com que o modelo evite repetir palavras que seriam naturalmente repetidas em um contexto real (por exemplo, preposições ou conjunções). Por outro lado, uma penalidade muito baixa pode não ser suficiente para evitar repetições indesejadas.
 
 - **Integração com Outras Técnicas**: A penalidade de frequência pode ser combinada com outras técnicas de refinamento da geração de texto, como a penalidade de temperatura, para obter saídas ainda mais controladas e coerentes.
+<br/>
+<br/>
+Implementação no método generate:
+```python
+  # A penalidade de frequência é utilizada para reduzir a repetição de palavras ou frases no texto gerado.
+  # que já foram produzidas na sessão de geração atual. 
+  if frequency_penalty is not None:
+      logits = self.apply_frequency_penalty(logits, idx_cond, frequency_penalty).to(device)
+```
+<br/>
 
-Em resumo, a penalidade de frequência é uma ferramenta útil para melhorar a qualidade e a diversidade do texto gerado por grandes modelos de linguagem.
-<br/>
-<br/>
-<br/>
-### Penalidade de Presença
+**3 - Penalidade de Presença**
 
 A Penalidade de Presença é uma técnica usada para controlar e guiar a geração de texto em grandes modelos de linguagem (LLMs). Enquanto técnicas como a penalidade de frequência visam reduzir repetições ao penalizar tokens que já foram gerados, a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, seja para aumentá-la ou diminuí-la.
 
@@ -546,45 +505,75 @@ Vantagens:
 Desafios:
 - **Escolha Cuidadosa**: A determinação dos valores de penalidade requer experimentação, pois uma penalidade muito forte pode levar a saídas não naturais ou forçadas.
 - **Conhecimento do Modelo**: Para aplicar efetivamente a penalidade de presença, é útil ter um entendimento de como o modelo funciona e quais tokens são relevantes para a tarefa em questão.
-
-Em resumo, a penalidade de presença é uma ferramenta útil para personalizar e refinar a saída de LLMs, permitindo que os usuários obtenham resultados mais alinhados com seus objetivos específicos.
 <br/>
 <br/>
+Implementação no método generate:
+```python
+  # a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, 
+  # seja para aumentá-la ou diminuí-la.
+  if presence_penalty is not None:
+      logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty).to(device)
+```
+<br/>
 
-### top_k
+**4 - top_k** 
 O `top_k` é uma estratégia de decodificação utilizada para controlar a geração de texto em grandes modelos de linguagem, como o GPT da OpenAI. A abordagem `top_k` visa restringir o espaço de possíveis tokens considerados para a próxima etapa de geração, baseando-se nos `k` tokens mais prováveis.
+<br/><br/>
+Em cada etapa, apenas os 'k' tokens mais prováveis são considerados para a amostragem.
+Isso restringe a amostragem a um subconjunto de tokens, evitando escolhas muito improváveis.
+<br/>
+Implementação no método generate:
+```python
+  # top_k: top probabilidades, opcionalmente, corte os logits para apenas as k principais opções
+  if top_k is not None:
+      # torch.topk - retorna os k maiores elementos do tensor de entrada fornecido ao longo de uma determinada dimensão.
+      v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+      logits[logits < v[:, [-1]]] = -float('Inf')       
+```
+<br/>
+<br/>
 
-Aqui está uma explicação detalhada do uso do `top_k`:
+**5 - Decodificação por Limite de Duração** <br/>
+Um limite pode ser definido para o número de tokens ou palavras que o modelo pode gerar. Isso pode ser útil para controlar a duração da saída. (`max_new_tokens e stop_sequence`)
 
-### Funcionamento Básico:
+A escolha da estratégia de decodificação depende do caso de uso específico. Por exemplo, para tarefas criativas onde a diversidade é valorizada, a amostragem ou Top-k podem ser preferíveis. Por outro lado, para tarefas onde a coerência e precisão são críticas, a decodificação gulosa (temperatura=0) podem ser mais apropriada.
+<br/>
+Implementação no método generate(`max_new_tokens`):
+```python
+  for _ in range(max_new_tokens):
+```
+Implementação no método generate(`stop_sequence`):
+```python
+  if stop_sequence is not None and self.detect_stop_sequence(idx, stop_sequence):
+      break
+```
+<br/>
+<br/>
 
-1. **Restrição de Escolha**:
-   - Após o modelo calcular os logits para o próximo token, estes são classificados em ordem decrescente de probabilidade.
-   - Em vez de considerar todos os tokens possíveis para a próxima etapa de geração, apenas os `k` tokens com as maiores probabilidades são considerados.
-   
-2. **Seleção de Token**:
-   - O próximo token é selecionado (geralmente através de amostragem) apenas a partir deste subconjunto restrito de `k` tokens.
+Por fim, referimo-nos a uma função multinomial que realiza uma amostragem da distribuição:
 
-### Benefícios do Uso de `top_k`:
+```python
+   # tire uma amostra da distribuição 
+   idx_next = torch.multinomial(probs, num_samples=1)
+```
 
-1. **Redução de Escolhas Improváveis**:
-   - Ao limitar a seleção aos `k` tokens mais prováveis, evita-se escolher tokens que são altamente improváveis e que poderiam levar a saídas incoerentes ou sem sentido.
+- **torch.multinomial**: É uma função da biblioteca PyTorch que realiza amostragem multinomial. Ela recebe dois argumentos principais: **probs** e **num_samples*.<br/>
+- **probs**: É um tensor que contém as probabilidades de cada evento na distribuição multinomial. Essas probabilidades devem ser não negativas e a soma de todas elas deve ser igual a 1.
 
-2. **Aumento da Eficiência**:
-   - Restringir a amostragem a um conjunto menor de tokens pode tornar o processo de decodificação mais eficiente em termos computacionais.
+- **num_samples**: É um inteiro que define quantas amostras serão obtidas na amostragem multinomial. No caso do código fornecido, é especificado como 1, o que significa que será retornada apenas uma amostra.
 
-3. **Flexibilidade**:
-   - O valor de `k` pode ser ajustado. Um valor menor de `k` tornará a geração mais focada e determinística, enquanto um valor maior permitirá mais diversidade na saída.
+O resultado dessa chamada de função é atribuído à variável `idx_next`. A variável `idx_next` conterá o índice da palavra selecionada na distribuição multinomial, ou seja, a palavra que foi amostrada com base nas probabilidades fornecidas.
 
-### Considerações ao Usar `top_k`:
+Em resumo, o código realiza a amostragem multinomial a partir de um tensor de probabilidades `probs` usando a função `torch.multinomial`. O resultado é um índice correspondente à palavra amostrada, que é armazenado na variável `idx_next`.
 
-1. **Equilíbrio entre Determinismo e Diversidade**:
-   - Escolher um `k` muito pequeno pode tornar a saída muito previsível e potencialmente repetitiva. Por outro lado, um `k` muito grande pode não ser eficaz em filtrar escolhas indesejadas.
+O arquivo [teste_multinomial_dist.py](https://github.com/wmelo52/GPTLab/blob/master/teste_multinomial_dist.py) dá uma boa intuição de como funciona esta amostragem de uma distribuição multinomial.
+&nbsp;  
+&nbsp;  
+O gráfico abaixo mostra a distribuição de probabilidades na saída da função softmax usando um tokenizador em nível de caractere ([inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py)).
 
-2. **Complementaridade com Outras Estratégias**:
-   - `top_k` é frequentemente usado em conjunto com outras estratégias, como `top_p` (também conhecida como decodificação "núcleo"). Combinar `top_k` com `top_p` pode oferecer um equilíbrio entre foco e diversidade na geração de texto.
-
-Em resumo, o `top_k` é uma técnica de decodificação que restringe a geração de texto aos `k` tokens mais prováveis em cada etapa. Isso oferece um equilíbrio entre gerar texto que seja coerente e relevante, enquanto ainda permite certa diversidade na saída. É uma ferramenta valiosa para controlar e guiar a geração de texto em grandes modelos de linguagem.
+![nanoGPT](assets/dist_probs_char.png)
+fig 5.1
+&nbsp;  &nbsp;  
 &nbsp;  
 &nbsp; 
 <br/>
@@ -612,12 +601,11 @@ Onde:
 
 A entropia cruzada é calculada para cada evento possível (caractere, no caso do modelo nanoGPT) e, em seguida, somada para obter a perda total.
 
+Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e treinado para ajustar os pesos de suas camadas, com o objetivo de maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Esse processo é realizado de forma iterativa em um corpus de texto, como os Contos de Machado de Assis.
 
-Durante o pré-treinamento, o modelo nanoGPT é alimentado com sequências de tokens de texto e é treinado para ajustar os pesos de suas camadas no modelo para maximizar a probabilidade de prever corretamente o próximo token no contexto fornecido. Isso é feito iterativamente em um corpus de texto, como os Contos de Machado de Assis.  
+Ao prever a próxima palavra, o modelo é exposto a uma ampla variedade de contextos e padrões linguísticos, permitindo que ele aprenda a reconhecer e capturar informações sobre estrutura gramatical, sintaxe, semântica e co-ocorrência de palavras.
 
-Ao prever a palavra seguinte, o modelo é exposto a uma ampla variedade de contextos e padrões linguísticos, o que permite que ele aprenda a reconhecer e capturar informações sobre estrutura gramatical, sintaxe, semântica e co-ocorrência de palavras.
-
-Depois do pré-treinamento, o modelo nanoGPT pode ser ajustado (fine-tuned) em uma tarefa específica usando dados rotulados. Durante o ajuste fino, a função objetivo pode ser alterada para se adequar à tarefa específica em questão, como classificação de sentimentos, tradução ou geração de texto condicional.
+Após o pré-treinamento, o modelo nanoGPT pode ser ajustado (fine-tuned) para uma tarefa específica usando dados rotulados. Durante o ajuste fino, a função objetivo pode ser alterada para se adequar à tarefa em questão, como classificação de sentimentos, tradução ou geração de texto condicional.
 &nbsp;  
 &nbsp;  
 O método abaixo implementa a função objetivo no treinamento do modelo nanoGPT:
@@ -679,11 +667,11 @@ batch_size = 32 # Quantas sequências independentes processaremos em paralelo?
 max_len = 64 # Qual é o comprimento máximo de contexto para previsões?
 max_iters = 5000
 ```
-O script [training_nanoGPT_GPU.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_GPU.py) é utilizado para treinar o modelo e utilizar o arquivo [obras_machado_de_assis_conto.txt](https://github.com/wmelo52/GPTLab/blob/master/corpus/machado_de_assis_conto.txt) como corpus de treinamento
+O script [training_nanoGPT_GPU.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_GPU.py) é usado para treinar o modelo, utilizando o arquivo [obras_machado_de_assis_conto.txt](https://github.com/wmelo52/GPTLab/blob/master/corpus/machado_de_assis_conto.txt) como corpus de treinamento.
 
 
 
-Isso gera algumas amostras, por exemplo (temperature=1.0):
+Utilizando o método "generate" para gerar algumas amostras de texto, com a temperatura ajustada para 1.0:
 
 ```
 pé, que uma sobretupou o lenço
@@ -701,7 +689,7 @@ que perdia dela nentrara, olhava com a rua sagradadeira, enfim, aprovantando tac
 fechação e dos novos. Nã
 ```
 
-Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT.py) para gerar algum texto baseado numa sentença inicial.
+Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT.py) para gerar algum texto baseado numa sentença inicial. Basta fornecer a sentença inicial como entrada e o modelo irá gerar o texto correspondente.
 
 &nbsp;
 
@@ -710,11 +698,16 @@ Você poderia usar o script [inference_nanoGPT.py](https://github.com/wmelo52/GP
 
 ## 8 - Eu só tenho um PC comum
 
-(ou outro computador barato). Não se preocupe, ainda podemos treinar o nanoGPT, mas queremos diminuir um pouco as coisas. 
+Não há problema! Mesmo com um PC comum ou um computador mais barato, ainda podemos treinar o nanoGPT, mas há algumas medidas que podemos tomar para tornar o processo mais leve. 
 
-Para o treinamento em CPU, recomendo o uso do arquivo [train_nanoGPT_cpu.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_CPU.py), no qual os hiperparâmetros são ajustados para reduzir a memória necessária e o tempo de processamento. Você pode utilizar como corpus de treinamento tanto o arquivo `shakespeare.txt` quanto o arquivo `machado_de_assis_conto.txt`.
+Podemos ajustar as configurações do treinamento, como reduzir o tamanho do lote (batch size) e diminuir o número de camadas e unidades ocultas no modelo. Além disso, podemos usar um corpus de treinamento menor para acelerar o processo.
 
-O nosso tamanho de contexto é de apenas 32 caracteres, em vez de 64, e o tamanho do lote é de apenas 32 exemplos por iteração, não 64. Além disso, usaremos um Transformer muito menor (4 camadas, 4 heads, tamanho do embedding de 64) e reduziremos o número de iterações para 5.000. Como nossa rede é muito pequena, também facilitamos a regularização (com `--dropout=0.0`). Esse processo ainda leva cerca de 14 minutos, mas nos proporciona uma perda de 2,02 e, consequentemente, amostras de qualidade inferior. No entanto, ainda é uma boa diversão.
+Com essas modificações, podemos adaptar o treinamento do nanoGPT para funcionar adequadamente em um PC comum ou computador mais simples.
+
+Para o treinamento em CPU, recomenda-se o uso do arquivo [train_nanoGPT_cpu.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_CPU.py), onde os hiperparâmetros são ajustados para minimizar a memória necessária e o tempo de processamento. Você pode escolher usar como corpus de treinamento o arquivo `shakespeare.txt` ou `machado_de_assis_conto.txt`.
+
+O nosso tamanho de contexto é de apenas 32 caracteres em vez de 64, e o tamanho do lote é de apenas 32 exemplos por iteração, não 64. Além disso, utilizaremos um Transformer significativamente menor (com 4 camadas, 4 heads e tamanho do embedding de 64) e reduziremos o número de iterações para 5.000. Dada a pequena dimensão da nossa rede, também facilitamos a regularização, com `--dropout=0.0`. Este procedimento ainda leva cerca de 14 minutos, mas resulta em uma perda de 2,02 e, consequentemente, amostras de qualidade inferior. 
+
 ```
 batch_size = 32
 n_embd = 64
@@ -726,7 +719,7 @@ max_len = 32 # Qual é o comprimento máximo de contexto para previsões?
 max_iters = 5000
 ```
 
-Isso gera algumas amostras, mas de qualidade inferior do gerado acima com GPU (temperature=1.0):
+Isso resulta na geração de algumas amostras de texto, no entanto, de qualidade inferior se comparado ao que foi gerado acima com GPU (configurada com temperatura=1.0):
 
 ```
 Maltia avas, cão respípas dais,
@@ -751,8 +744,8 @@ A perda na validação para o treinamento em CPU
 fig 8.1
 <br/><br/>
 
-- Quando utilizamos o treinamento em CPU, o tamanho do vocabulário é 115 e a dimensão do vetor de embeddings é 64, o que resulta em 115x64 = 7360. 
-- O número total de parâmetros deste modelo é 207.936, então a camada de embeddings representa 3,54% deste total. Se utilizássemos o tokenizador do GPT-2, que usa o algoritmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para tokenização, o tamanho do vocabulário seria de 50257. Isso aumentaria bastante o tamanho do modelo: 50257x64 = 3.216.448, e a camada de embeddings representaria 94,13% do tamanho do modelo.
+- Quando usamos o treinamento em CPU, o tamanho do vocabulário é de 115 e a dimensão do vetor de embeddings é de 64, resultando em 115x64 = 7360.
+- O número total de parâmetros deste modelo é de 207.936, portanto a camada de embeddings representa 3,54% desse total. Se usássemos o tokenizador do GPT-2, que aplica o algoritmo [BPE](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt) para a tokenização, o tamanho do vocabulário aumentaria para 50257. Isso ampliaria significativamente o tamanho do modelo: 50257x64 = 3.216.448, fazendo com que a camada de embeddings representasse 94,13% do tamanho total do modelo.
 
 <br/><br/>
 <br/>
@@ -762,8 +755,9 @@ fig 8.1
 
 **Visualizando embeddings posicional e embeddings dos tokens (GPU)**
 
-Os vetores de palavras, também conhecidos como word embeddings, são representações numéricas de palavras que capturam relações semânticas e sintáticas entre palavras com base em seu uso contextual. Esses vetores são tipicamente de alta dimensão, tornando difícil visualizá-los diretamente.
-Para superar esse desafio, o t-SNE pode ser aplicado para reduzir a dimensionalidade dos vetores de palavras, preservando suas distâncias relativas. O algoritmo t-SNE visa mapear cada vetor de alta dimensão para um ponto bidimensional em um gráfico de dispersão, onde vetores semelhantes são posicionados próximos uns dos outros e vetores diferentes são posicionados mais distantes.
+As representações numéricas de palavras, também conhecidas como word embeddings, são formatos que capturam relações semânticas e sintáticas entre as palavras, com base em seu uso no contexto. Como esses vetores normalmente possuem uma alta dimensão, a visualização direta se torna um desafio.
+
+Para superar esta dificuldade, podemos utilizar o t-SNE, um algoritmo capaz de reduzir a dimensionalidade dos vetores de palavras, mantendo as distâncias relativas entre eles. O t-SNE busca mapear cada vetor de alta dimensão para um ponto bidimensional em um gráfico de dispersão. Neste mapeamento, vetores semelhantes são posicionados próximos, enquanto vetores diferentes são colocados mais distantes uns dos outros.
 
 
 
@@ -773,7 +767,7 @@ O arquivo [word_cluster_plot.py](https://github.com/wmelo52/GPTLab/blob/master/w
 &nbsp;  &nbsp;  
 &nbsp;  
 
-As Matrizes embeddings posicional e token embeddings são inicializadas com pesos aleatoriamente selecionados como demostrado nas figuras abaixo:
+As matrizes de embeddings posicional e de token são inicializadas com pesos escolhidos aleatoriamente, como demonstrado nas figuras a seguir:
 &nbsp;  
 <br/>
 Posicional embeddings (max_len=64)<br/>
@@ -785,19 +779,19 @@ Token embeddings (tamanho do vocabulário=115)<br/>
 fig 9.2
 
 <br/><br/>
-<br/>
 
 
-No treinamento em GPU com um modelo de 10,2M de parâmetros, que utilizou hiperparâmetros de arquitetura maiores e obteve uma função de perda de 1,44, os resultados abaixo mostram um padrão nos embeddings posicionais. No gráfico desses embeddings, nota-se uma variação de 0 a 63, correspondente ao comprimento máximo da sentença, que é de 64.
+Durante o treinamento em GPU com um modelo que tem 10,2M de parâmetros e utilizou hiperparâmetros de arquitetura do Transformer significativamente maiores, conseguimos alcançar uma função de perda final de 1,44. Os resultados abaixo revelam um padrão nos embeddings posicionais. No gráfico desses embeddings, é possível observar um alinhamento dos tokens posicionais de 0 a 63, ver fig 9.3.
 
-No gráfico de token embeddings, observa-se que houve agrupamento de tokens (caracteres) que são próximos quando o modelo foi treinado. As vogais minúsculas estão próximas umas das outras, assim como as consoantes minúsculas, que, por sua vez, estão próximas do grupo das vogais minúsculas. Isso era de se esperar, pois as sílabas mais comuns são formadas por essas consoantes e vogais, como por exemplo: pa, ma, etc.
-
-Observa-se também que as vogais maiúsculas estão próximas entre si, assim como as consoantes maiúsculas e os sinais de pontuação. Os números também estão agrupados próximos uns dos outros.
-&nbsp;  
 <br/>
 Posicional embeddings (max_len=64)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_pos_emb_5000.png" width="500" height="300"><br/>
 fig 9.3<br/>
+<br/>
+Nas visualizações de token embeddings, observa-se que houve um agrupamento de tokens (caracteres) que são semanticamente próximos, quando o modelo foi treinado. As vogais minúsculas estão agrupadas, assim como as consoantes minúsculas, que por sua vez, estão próximas do agrupamento das vogais minúsculas. Isso é previsível, já que as sílabas mais comuns são formadas por essas consoantes e vogais, tal como 'pa', 'ma', etc.
+<br/><br/>
+Notamos também que as vogais maiúsculas estão agrupadas, assim como as consoantes maiúsculas e os sinais de pontuação. Além disso, os números estão próximos uns dos outros, ver fig 9.4
+
 <br/>
 Token embeddings (tamanho do vocabulário=115)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_tok_emb_5000.png" width="500" height="300"><br/>
@@ -808,16 +802,16 @@ fig 9.4
 
 **Visualizando embeddings posicional e embeddings dos tokens (CPU)**
 
-No treinamento em CPU com um modelo de 200k de parâmetros, que utilizou hiperparâmetros de arquitetura reduzidos e obteve uma função de perda de 2,06, os resultados mostram que não se formou um padrão nos embeddings posicionais, conforme observado no gráfico (comprimento máximo da sentença = 32).
+Durante o treinamento em CPU com um modelo de 200k de parâmetros, onde foram utilizados hiperparâmetros de arquitetura consideravelmente reduzidos e obtida uma função de perda de 2,06, os resultados indicam que não se formou um padrão nos embeddings posicionais, conforme pode ser observado no gráfico (com comprimento máximo da sentença = 32) - ver Figura 9.5.
 
-Quanto ao gráfico de token embeddings, observa-se que houve um agrupamento menor de tokens (caracteres) relacionados quando comparado ao modelo de 10M de parâmetros.
-
-Pelos gráficos abaixo, nota-se que os embeddings posicionais não tiveram a convergência necessária, o que justifica a baixa performance na previsão de caracteres.
+Pelo gráfico abaixo, nota-se que os embeddings posicionais não tiveram a convergência necessária, o que justifica a baixa performance na previsão de caracteres.
 &nbsp;  <br/>
 
 Posicional embeddings (max_len=32)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_CPU_pos_emb_5000.png" width="500" height="300"><br/>
 fig 9.5<br/><br/>
+Quanto ao gráfico de token embeddings, observa-se que houve um agrupamento menor de tokens (caracteres) relacionados quando comparado ao modelo de 10M de parâmetros.<br/>
+<br/>
 Token embeddings (tamanho do vocabulário=115)<br/>
 <img alt="text" src="assets/machado_de_assis_conto_CPU_tok_emb_5000.png" width="500" height="300"><br/>
 fig 9.6
@@ -871,7 +865,7 @@ Para o token embeddings foram marcados dois grupos: vogais (`"a","e","i","o","u"
 
 ### Variando a Temperatura
 
-**Prevendo o próximo token:  `torch.multinomial` ou `torch.argmax`**
+**Prevendo o próximo token/palavra:  `torch.multinomial` ou `torch.argmax`**
 <br/>
 
 Substituindo esta linha no método generate da class nanoGPTModel:
@@ -903,25 +897,8 @@ de ser alguma coisa que ele se aconteceu a
 OBS:O resultado acima poderia ser obtido utilizando a função de amostragem `torch.multinomial` e ajustando o parâmetro temperatura para zero.
 <br/>
 
-Em um modelo GPT (Generative Pre-trained Transformer) ou qualquer modelo de geração de linguagem, o objetivo é prever o próximo token dado o contexto. Tanto `torch.multinomial` quanto `torch.argmax` podem ser usados para esse propósito, mas eles têm propósitos diferentes e implicam em resultados diferentes.
+É crucial experimentar variados valores de temperatura para atingir o equilíbrio adequado, levando em consideração a tarefa específica a ser executada e as preferências do usuário.
 
-1. `torch.multinomial`:
-
-* torch.multinomial é usado para amostragem em uma distribuição multinomial. Ele recebe uma distribuição de probabilidades como entrada e retorna uma amostra com base nas probabilidades.
-* No contexto da geração de linguagem, o modelo GPT produz uma distribuição de probabilidade sobre o vocabulário para o próximo token. Ao usar torch.multinomial, é possível amostrar dessa distribuição para obter um token com uma probabilidade proporcional à sua probabilidade predita.
-* Amostrar a partir da distribuição adiciona diversidade ao texto gerado e permite saídas mais variadas e criativas. Isso introduz aleatoriedade, o que pode ser desejável em determinadas aplicações, como sistemas de diálogo ou escrita criativa.
-
-2. `torch.argmax`:
-
-* torch.argmax é usado para encontrar o índice do valor máximo em um tensor. Ele retorna o token mais provável com base na maior probabilidade na distribuição.
-* Usar torch.argmax para selecionar o próximo token sempre resultaria na mesma escolha de token se a distribuição for determinística. Isso pode levar a uma geração de texto repetitiva e menos diversa.
-* No entanto, em alguns cenários, quando se prioriza o token mais provável ou quando se deseja um comportamento determinístico, usar torch.argmax pode ser apropriado. Por exemplo, na tradução automática, pode-se desejar escolher a palavra de tradução mais provável, palavra por palavra.
-
-Em resumo, `torch.multinomial` é frequentemente preferido em modelos de geração de linguagem, como o GPT, para introduzir aleatoriedade e aumentar a diversidade no texto gerado. Por outro lado, `torch.argmax` é útil quando se deseja escolher o token mais provável de forma determinística ou priorizar predições de alta confiança.
-&nbsp;  
-<br/>
-
-É importante experimentar diferentes valores de temperatura para encontrar o equilíbrio adequado para a tarefa específica em mãos e para as preferências do usuário.
 ```python
 output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
 ```
@@ -965,7 +942,8 @@ jarlim; digveôm-se-BstÚ*LHA 9ibuna, eu colheaçaC5, é suscerTuiricê, nl! o d
 mas infWlândI$*.
 A — Apenéiº Jose-lheCNeDIAPerY!jês Imâni2
 ```
-Depois de experimentar diferentes valores de temperatura, o valor de `0.8` apresentou melhores respostas.
+
+Após experiências com diferentes valores de temperatura, constatou-se que o valor de `0.8` produziu as melhores respostas.
 &nbsp;  &nbsp;  
 
 <br/><br/><br/>
@@ -999,11 +977,11 @@ O b na frente das strings indica que as strings são strings de bytes
 
 Como o tamanho do vocabulário é 50257 tokens, o tamanho da camada embeddings é aumentada para 50257*384=19.298.688 e o tamanho do modelo é agora de 29,93M.
 
-Quando treinamento é realizado numa máquina com uma GPU (**NVIDIA GeForce GTX 1050 Ti 4GB**) e usando o script  [training_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_tok_GPT2.py) para treinar o modelo, resulta numa perda de validação de 3,42 e o tempo de treinamento foi de 36 minutos.
+Quando o treinamento é realizado em uma máquina equipada com uma GPU (**NVIDIA GeForce GTX 1050 Ti 4GB**) e utilizando o script  [training_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/training_nanoGPT_tok_GPT2.py) para treinar o modelo, alcançamos uma perda de validação de 3,42 e o tempo de treinamento foi de 36 minutos.
 
 Quando o treinamento é realizado numa máquina com uma GPU mais robusta (**NVIDIA Quadro RTX 5000 16GB**), o tempo de treinamento é reduzido para 9 minutos.
 
-O texto gerado apresenta melhor qualidade porque a tokenização em nível de subpalavras permite capturar melhor a semântica das palavras e pode ser mais eficiente em termos de uso de tokens, mas pode exigir algum processamento adicional para lidar com os tokens gerados (temperatura=1.0).
+O texto gerado apresenta qualidade superior porque a tokenização em nível de subpalavras permite uma captura mais eficiente da semântica das palavras e pode ser mais efetiva em termos de uso de tokens. No entanto, pode ser necessário algum processamento adicional para lidar com os tokens gerados (com temperatura ajustada para 1.0).
 
 ```
 A figura é poética, mas não é a da heroína do romance. Tinha o serviço invecas chegara
@@ -1043,7 +1021,7 @@ outros.
 — É verdade, respondeu Azevedo.
 ```
 
-Usamos o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) para gerar texto que utiliza o tokenizador tiktoken.
+Utilizando o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) para gerar texto que utiliza o tokenizador tiktoken.
 <br/><br/>
 <br/>
 <br/>
@@ -1054,31 +1032,33 @@ Usamos o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLa
 ## 13 - Experimento 5
 ### Plotando os pesos de atenção
 
-O mecanismo de self-attention no decodificador do modelo GPT utiliza várias "heads" para capturar diferentes relações e informações em um texto. Cada head é responsável por aprender uma representação diferente e capturar uma perspectiva única dos tokens de entrada.
+O mecanismo de self-attention, particularmente no contexto de modelos como o nanoGPT, utiliza várias "heads" por várias razões:
 
-Existem algumas razões pelas quais várias heads são necessárias no mecanismo de self-attention:
+1. **Diversidade de Representações**: Cada head pode aprender a atender a diferentes partes da entrada. Por exemplo, enquanto uma head pode se concentrar em relações sintáticas (como a relação entre um sujeito e seu verbo), outra pode se concentrar em relações semânticas ou contextuais. Ter várias heads permite ao modelo capturar uma gama mais ampla de dependências e relações no texto.
 
-- Captura de relações complexas: Com várias heads, o modelo é capaz de aprender relações mais complexas entre os tokens. Cada cabeça de atenção tem sua própria matriz de pesos, o que permite que ela se concentre em diferentes partes do texto. Isso ajuda o modelo a capturar relações de dependência de longo alcance e a entender melhor a estrutura do texto.
+2. **Captação de Dependências em Diferentes Distâncias**: Em uma sequência longa, algumas palavras podem estar relacionadas a palavras que estão muito distantes delas. Algumas heads podem se especializar em captar dependências de curto alcance, enquanto outras podem se concentrar em dependências de longo alcance.
 
-- Atenção em aspectos diferentes: Cada cabeça de atenção pode se especializar em diferentes aspectos do texto. Por exemplo, uma cabeça pode se concentrar nas relações sintáticas entre os tokens, enquanto outra pode se concentrar nas relações semânticas. Isso permite que o modelo capture diferentes tipos de informações contextuais e melhore sua capacidade de compreensão.
+3. **Aumento da Capacidade do Modelo**: Adicionar mais heads aumenta a capacidade do modelo sem aumentar significativamente a complexidade computacional, especialmente quando comparado a outras abordagens, como aumentar a dimensão do embedding ou adicionar mais camadas.
 
-- Melhor capacidade de generalização: Usar várias heads ajuda o modelo a generalizar melhor para diferentes tipos de tarefas. Cada cabeça pode aprender representações distintas e, quando combinadas, elas fornecem uma visão mais abrangente do texto. Essa abordagem pode melhorar o desempenho do modelo em várias tarefas de processamento de linguagem natural, como tradução, sumarização e resposta a perguntas.
+4. **Paralelismo e Eficiência**: Várias heads podem operar em paralelo durante o treinamento e a inferência, o que pode levar a ganhos de eficiência em hardware específico, como GPUs.
 
-- Eficiência computacional: Embora o uso de várias heads possa aumentar o custo computacional, o mecanismo de self-attention pode ser paralelizado de forma eficiente. Isso significa que o modelo pode processar múltiplas cabeças de atenção em paralelo, aproveitando o poder de processamento das GPUs modernas. Portanto, o benefício em termos de desempenho geralmente supera o custo adicional.
+5. **Robustez**: Ao ter várias heads, o modelo pode se tornar mais robusto a ruídos e variações nos dados. Se uma head falhar em captar uma relação particular em uma instância específica, outra head pode compensar.
 
-Em resumo, a utilização de várias heads no mecanismo de self-attention no decodificador do modelo GPT é necessária para capturar relações complexas, abordar diferentes aspectos do texto, melhorar a capacidade de generalização e aproveitar a eficiência computacional. Essa abordagem permite que o modelo entenda melhor a estrutura do texto e melhore seu desempenho em várias tarefas de processamento de linguagem natural.
+6. **Interpretabilidade**: Embora os modelos de linguagem profunda, como o nanoGPT, sejam muitas vezes vistos como caixas pretas, examinar as atenções de diferentes heads pode oferecer insights sobre o que o modelo pode estar "pensando" ou "considerando" em diferentes etapas do processamento.
+
+Em resumo, enquanto uma única head de atenção poderia aprender a representar dependências em dados, várias heads permitem que o modelo capture uma variedade mais rica de informações e relações, tornando-o mais poderoso e versátil.
 <br/>  
-O script [inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py) foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_CPU** (`n_head = 4`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de caractere foi usado para tokenizar a sentença `'A figura é poética'`.
+Utilizamos o script [inference_nanoGPT_exp5.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_exp5.py) para gerar a imagem a seguir. O checkpoint empregado para isso foi o **machado_de_assis_conto_CPU**, o qual utiliza um parâmetro `n_head` de valor 4. Os pesos, denominados `att_wei`, foram extraídos da última camada do modelo. A sentença "A figura é poética" foi tokenizada utilizando um tokenizador em nível de caractere.
 
 ![nanoGPT](assets/att_char.png)
 fig 13.1
 <br/>  <br/>  
-O script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py) foi utilizado para gerar a imagem abaixo. O checkpoint usado foi o **machado_de_assis_conto_tok_GPT2** (`n_head = 6`). Os pesos `att_wei` foram retirados da última camada. O tokenizador em nível de subpalavras (tiktoken) foi usado para tokenizar a sentença `'A figura é poética, mas não é a da heroína do romance.'`.
+A imagem a seguir foi gerada utilizando o script [inference_nanoGPT_tok_GPT2.py](https://github.com/wmelo52/GPTLab/blob/master/inference_nanoGPT_tok_GPT2.py). O checkpoint **machado_de_assis_conto_tok_GPT2** foi usado neste processo, definido com um `n_head` de valor 6. Extraímos os pesos, referidos como `att_wei`, da última camada do modelo. Para a tokenização da sentença "A figura é poética, mas não é a da heroína do romance.", utilizamos um tokenizador de nível de subpalavras, chamado tiktoken.
 
 ![nanoGPT](assets/att_tiktoken.png)
 fig 13.2
 <br/><br/><br/>
-Você pode ajustar o parâmetro `n_head = 1` e comparar o resultado com figura acima. A perda de validação foi um pouco maior do que com `n_head = 6`.
+É possível ajustar o parâmetro para `n_head = 1` e comparar o resultado com a figura apresentada anteriormente. Note que a perda de validação tende a ser um pouco maior quando comparada à obtida com `n_head = 6`.
 <br/>
 <div align="left">
   <img alt="text" src="assets/att_tiktoken_head_1.png" width="400" height="400">
