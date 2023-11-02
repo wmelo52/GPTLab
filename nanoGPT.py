@@ -241,6 +241,7 @@ class nanoGPTModel(nn.Module):
         all_self_attentions = []
         all_hidden_states = []
         all_att_weights = []
+
         for block in self.transformer.h:
             x, att, att_wei  = block(x)
             all_self_attentions.append(att)
@@ -304,6 +305,7 @@ class nanoGPTModel(nn.Module):
         print(f"Total Trainable Parameters: {total_params}")
         
     
+
     def apply_frequency_penalty(self, logits, generated_tokens, frequency_penalty):
         """
         Apply frequency penalty to the logits.
@@ -326,9 +328,10 @@ class nanoGPTModel(nn.Module):
         penalized_logits = logits - frequency_penalty * token_counts
 
         tensor_penalized_logits = torch.tensor(penalized_logits).unsqueeze(0).unsqueeze(0)
-        return tensor_penalized_logits.to('cuda')
+        return tensor_penalized_logits
     
     
+
     def apply_presence_penalty(self, logits, token_to_id, penalty_dict):
         """
         Apply presence penalty to the logits.
@@ -349,21 +352,42 @@ class nanoGPTModel(nn.Module):
                 logits[token_id] += penalty
 
         tensor_penalized_logits = torch.tensor(logits).unsqueeze(0).unsqueeze(0)
-        return tensor_penalized_logits.to('cuda')
+        return tensor_penalized_logits
+
+
+
+    def detect_stop_sequence(self, idx, stop_sequence_ids):
+        """
+        As sequências de parada, também conhecidas como sequências de terminação ou marcadores de final de texto, 
+        são sequências predefinidas de tokens que sinalizam a um modelo de linguagem para parar de gerar mais texto.
+        """
+        s = len(stop_sequence_ids)
+        A = torch.tensor(stop_sequence_ids)
+        B = idx[0,(-s):].cpu()
+
+        if all(A == B):
+            return True
+
+        return False           
+
 
 
     @torch.no_grad()
-    def generate(self, idx, temperature=1.0, max_new_tokens=500, top_k=None, frequency_penalty=None, presence_penalty=None, token_to_id=None, stop_sequence=None):
+    def generate(self, 
+                 idx, temperature=0.8, 
+                 max_new_tokens=500, top_k=None, 
+                 frequency_penalty=None, 
+                 presence_penalty=None, 
+                 token_to_id=None, 
+                 stop_sequence=None):
         """
         Pegue uma sequência de condicionamento de índices idx (LongTensor de forma (b,t)) e complete
         a sequência max_new_tokens vezes, alimentando as previsões de volta ao modelo a cada vez.
         Muito provavelmente você vai querer certificar-se de estar no modo de operação model.eval() para isso.
         """
+        device = idx.device
         b, t = idx.size()
         assert t <= self.config.max_len, f"Não é possível encaminhar a sequência de comprimento {t}, o tamanho máximo de tokens na sentença é {self.config.max_len}"                
-
-        if stop_sequence is not None:
-            stop_sequence_id = token_to_id[stop_sequence]
 
         for _ in range(max_new_tokens):
             # se o contexto da sequência estiver crescendo muito, devemos cortá-lo em max_len
@@ -379,12 +403,12 @@ class nanoGPTModel(nn.Module):
             # A penalidade de frequência é utilizada para reduzir a repetição de palavras ou frases no texto gerado.
             # que já foram produzidas na sessão de geração atual. 
             if frequency_penalty is not None:
-                logits = self.apply_frequency_penalty(logits, idx_cond, frequency_penalty)
+                logits = self.apply_frequency_penalty(logits, idx_cond, frequency_penalty).to(device)
 
             # a penalidade de presença foca em ajustar a probabilidade de determinados tokens ou frases serem gerados, 
             # seja para aumentá-la ou diminuí-la.
             if presence_penalty is not None:
-                logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty)
+                logits = self.apply_presence_penalty(logits, token_to_id, presence_penalty).to(device)
 
             # pegue os logits na etapa final e dimensione pela temperatura desejada
             temperature = 0.0001 if temperature == 0.0 else temperature
@@ -392,7 +416,7 @@ class nanoGPTModel(nn.Module):
             
             # top_k: top probabilidades, opcionalmente, corte os logits para apenas as k principais opções
             if top_k is not None:
-                # Retorna os k maiores elementos do tensor de entrada fornecido ao longo de uma determinada dimensão.
+                # torch.topk - retorna os k maiores elementos do tensor de entrada fornecido ao longo de uma determinada dimensão.
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = -float('Inf')                
             
@@ -404,10 +428,8 @@ class nanoGPTModel(nn.Module):
                       
             # anexe o índice amostrado à sequência em execução e continue
             idx = torch.cat((idx, idx_next), dim=1)
-
-            # As sequências de parada, também conhecidas como sequências de terminação ou marcadores de final de texto, 
-            # são sequências predefinidas de tokens que sinalizam a um modelo de linguagem para parar de gerar mais texto.
-            if stop_sequence is not None and stop_sequence_id in idx:
+            
+            if stop_sequence is not None and self.detect_stop_sequence(idx, stop_sequence):
                 break
 
         return idx
