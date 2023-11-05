@@ -34,7 +34,8 @@ context = torch.zeros((1, 1), dtype=torch.long, device=device)
 sentence = 'A figura é poética,'
 sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
 # sequências de parada
-stop_sequence = tokenizer.encode('\n—')
+stop_words =['\n—', '\n\n']
+stop_sequences = [tokenizer.encode(stop_word) for stop_word in stop_words]
 
 inicio=time.time()
 
@@ -45,7 +46,7 @@ output = model.generate(sent,
                         top_k=None, #10,
                         frequency_penalty=None, #0.2,
                         presence_penalty=None, #penalty_dict, 
-                        stop_sequence=stop_sequence, #stop_sequence,
+                        stop_sequence=None, #stop_sequence,
                         token_to_id=stoi
                         )
 

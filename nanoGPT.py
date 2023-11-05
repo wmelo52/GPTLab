@@ -207,6 +207,7 @@ class nanoGPTModel(nn.Module):
         # report number of parameters
         print("number of parameters: %.2fM" % (self.get_num_params()/1e6,))
 
+
     def get_num_params(self, non_embedding=True):
         """
          Retorna o número de parâmetros no modelo.
@@ -219,6 +220,7 @@ class nanoGPTModel(nn.Module):
             n_params -= self.transformer.wpe.weight.numel()
         return n_params
 
+
     def _init_weights(self, module):
         if isinstance(module, nn.Linear):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
@@ -226,6 +228,7 @@ class nanoGPTModel(nn.Module):
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
 
     def forward(self, idx, targets=None):
         device = idx.device
@@ -356,26 +359,29 @@ class nanoGPTModel(nn.Module):
 
 
 
-    def detect_stop_sequence(self, idx, stop_sequence_ids):
+    def detect_stop_sequence(self, idx, stop_sequences):
         """
         As sequências de parada, também conhecidas como sequências de terminação ou marcadores de final de texto, 
         são sequências predefinidas de tokens que sinalizam a um modelo de linguagem para parar de gerar mais texto.
         """
-        s = len(stop_sequence_ids)
-        A = torch.tensor(stop_sequence_ids)
-        B = idx[0,(-s):].cpu()
+        for stop_sequence in stop_sequences:
+            s = len(stop_sequence)
+            A = torch.tensor(stop_sequence)
+            B = idx[0,-s:].cpu()
 
-        if all(A == B):
-            return True
+            if all(A == B):
+                return True
 
-        return False           
+        return False              
 
 
 
     @torch.no_grad()
     def generate(self, 
-                 idx, temperature=0.8, 
-                 max_new_tokens=500, top_k=None, 
+                 idx, 
+                 temperature=0.8, 
+                 max_new_tokens=500, 
+                 top_k=None, 
                  frequency_penalty=None, 
                  presence_penalty=None, 
                  token_to_id=None, 

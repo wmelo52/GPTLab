@@ -4,6 +4,7 @@ from nanoGPT import GPTConfig, nanoGPTModel
 import tiktoken
 import numpy as np
 import json
+import time, datetime
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -30,7 +31,10 @@ context = torch.zeros((1, 1), dtype=torch.long, device=device)
 sentence = 'A figura é poética, mas não é a da heroína do romance.'
 sent = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0).to(device)
 # sequências de parada
-stop_sequence = tokenizer.encode('\n—')
+stop_words =['\n-', '?']
+stop_sequences = [tokenizer.encode(stop_word) for stop_word in stop_words]
+
+inicio=time.time()
 
 # top_k: top probabilidades
 output = model.generate(sent, 
@@ -38,10 +42,13 @@ output = model.generate(sent,
                         max_new_tokens=500,                          
                         top_k=None, 
                         frequency_penalty=None,
-                        stop_sequence=None, #stop_sequence,
+                        stop_sequence=None #stop_sequences
                        )
 
 print(tokenizer.decode(output[0].tolist()))
+
+fim=time.time()
+print("\nTempo total para inderência do modelo nanoGPT: %s \n" % (str(datetime.timedelta(seconds=(fim-inicio)))))
 
 #print(model.count_parameters())
 #[encoding.decode_single_token_bytes(token) for token in encoding.encode('A figura é poética!')]
