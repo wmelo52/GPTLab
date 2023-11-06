@@ -5,6 +5,7 @@ import numpy as np
 import time, datetime
 import torch
 from nanoGPT import GPTConfig, nanoGPTModel
+from generation import generate
       
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -109,4 +110,4 @@ model.save_pretrained(model_path)
     
 # generate from the model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(encoding.decode(model.generate(context, max_new_tokens=500)[0].tolist()))
+print(encoding.decode(generate(model, context, max_new_tokens=500)[0].tolist()))

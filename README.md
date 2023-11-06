@@ -471,7 +471,20 @@ quando a entrada é [26, 1, 57, 60, 58, 72, 69, 52, 1, 101, 1, 67, 66](A figura 
 Existe um equívoco comum de que LLMs como Llama-2 produzem texto diretamente. Este não é o caso. Em vez disso, os LLMs calculam logits, que são pontuações (score) atribuídas a cada possível token em seu vocabulário. Estas pontuações são normalizadas pela função softmax e transformadas numa distribuição multinomial discreta onde o número de variáveis é o tamanho do vocabulário, ver fig. 5.1.
 
 ### Generate<br/>
-A função `generate` é fundamental em modelos generativos como o nanoGPT, sendo responsável pela produção de sequências de texto a partir de uma entrada ou prompt fornecido.
+A função `generate` é fundamental em modelos generativos como o nanoGPT, sendo responsável pela produção de sequências de texto a partir de uma entrada ou prompt fornecido. Esta função é implementada no arquivo [generation.py](https://github.com/wmelo52/GPTLab/blob/master/generation.py) 
+
+```python
+def generate(model,
+             idx, 
+             temperature=0.8, 
+             max_new_tokens=500, 
+             top_k=None, 
+             frequency_penalty=None, 
+             presence_penalty=None, 
+             token_to_id=None, 
+             stop_sequence=None
+             )
+```
 
 O primeiro passo é obter os logits (scores) da saída do modelo nanoGPT.
 ```python
@@ -915,9 +928,6 @@ OBS:O resultado acima poderia ser obtido utilizando a função de amostragem `to
 
 É crucial experimentar variados valores de temperatura para atingir o equilíbrio adequado, levando em consideração a tarefa específica a ser executada e as preferências do usuário.
 
-```python
-output = model.generate(sent, max_new_tokens=1400, temperature=0.5, top_k=None)
-```
 <br/>
 Mudando a temperatura para `0.5` no modelo `checkpoints/machado_de_assis_conto`, o texto gerado é mais determinístico, coerente e previsível:
 

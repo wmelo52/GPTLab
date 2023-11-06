@@ -5,6 +5,7 @@ import os
 import numpy as np
 import torch
 from nanoGPT import GPTConfig, nanoGPTModel
+from generation import generate
       
 #device = 'cuda' if torch.cuda.is_available() else 'cpu'
 device = 'cpu'
@@ -119,7 +120,7 @@ model.save_pretrained(model_path, chars)
             
 # generate from the model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(decode(model.generate(context, max_new_tokens=1400)[0].tolist()))
+print(decode(generate(model, context, max_new_tokens=1400)[0].tolist()))
 
 
 from matplotlib import pyplot as plt
