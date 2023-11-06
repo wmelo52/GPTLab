@@ -4,6 +4,7 @@ from nanoGPT import GPTConfig, nanoGPTModel, nanoGPTTokenizer
 import numpy as np
 import json
 import time, datetime
+from generation import generate
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -18,7 +19,7 @@ config = GPTConfig(**json_obj)
 
 tokenizer = nanoGPTTokenizer(model_path) 
 model = nanoGPTModel(config)    
-model.to(device)   
+model.to(device)  
    
 stoi = { ch:i for i,ch in enumerate(tokenizer.vocab) }
 penalty_dict = {"u": -0.5, "a": 0.5}  # Penalize "e" and encourage "a"
@@ -40,15 +41,17 @@ stop_sequences = [tokenizer.encode(stop_word) for stop_word in stop_words]
 inicio=time.time()
 
 # https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html
-output = model.generate(sent, 
-                        temperature=0.8, 
-                        max_new_tokens=1400,                         
-                        top_k=None, #10,
-                        frequency_penalty=None, #0.2,
-                        presence_penalty=None, #penalty_dict, 
-                        stop_sequence=None, #stop_sequence,
-                        token_to_id=stoi
-                        )
+# https://medium.com/@developer.yasir.pk/understanding-the-controllable-parameters-to-run-inference-your-large-language-model-30643bb46434
+output = generate(model,
+                  sent, 
+                  temperature=0.8, 
+                  max_new_tokens=1400,                         
+                  top_k=None, #10,
+                  frequency_penalty=0.2,
+                  presence_penalty=None, #penalty_dict, 
+                  stop_sequence=None, #stop_sequence,
+                  token_to_id=stoi
+                )
 
 predicted_tokens = output[0].tolist()
 print(tokenizer.decode(predicted_tokens))

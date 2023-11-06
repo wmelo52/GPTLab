@@ -5,6 +5,7 @@ import tiktoken
 import numpy as np
 import json
 import time, datetime
+from generation import generate
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -37,13 +38,14 @@ stop_sequences = [tokenizer.encode(stop_word) for stop_word in stop_words]
 inicio=time.time()
 
 # top_k: top probabilidades
-output = model.generate(sent, 
-                        temperature=0.8,
-                        max_new_tokens=500,                          
-                        top_k=None, 
-                        frequency_penalty=None,
-                        stop_sequence=None #stop_sequences
-                       )
+output = generate(model,
+                  sent, 
+                  temperature=0.8,
+                  max_new_tokens=500,                          
+                  top_k=None, 
+                  frequency_penalty=None,
+                  stop_sequence=None #stop_sequences
+                )
 
 print(tokenizer.decode(output[0].tolist()))
 
