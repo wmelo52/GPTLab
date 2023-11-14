@@ -20,6 +20,7 @@ config = GPTConfig(**json_obj)
 tokenizer = nanoGPTTokenizer(model_path) 
 model = nanoGPTModel(config)    
 model.to(device)  
+#print(model, "\n")
    
 stoi = { ch:i for i,ch in enumerate(tokenizer.vocab) }
 penalty_dict = {"u": -0.5, "a": 0.5}  # Penalize "e" and encourage "a"

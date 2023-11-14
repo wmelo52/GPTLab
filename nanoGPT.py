@@ -168,7 +168,7 @@ class Block(nn.Module):
         feed_forward_hidden_states = self.mlp(hidden_states)
         # residual connection
         hidden_states = residual + feed_forward_hidden_states
-        return hidden_states, attn_outputs, att_wei         
+        return hidden_states, attn_outputs, att_wei          
 
 
 
@@ -261,6 +261,7 @@ class nanoGPTModel(nn.Module):
         else:
             # mini-otimização de tempo de inferência: encaminhar apenas o lm_head na última posição
             logits = self.lm_head(last_hidden_state[:, [-1], :]) # nota: usando a lista [-1] para preservar a dimensão de tempo(T)
+            #logits = self.lm_head(all_hidden_states[5][:, [-1], :])
             loss = None
 
         #return logits, loss, att_wei

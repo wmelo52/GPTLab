@@ -80,7 +80,8 @@ def generate(model,
              frequency_penalty=None, 
              presence_penalty=None, 
              token_to_id=None, 
-             stop_sequence=None):
+             stop_sequence=None
+             ):
     """
     Pegue uma sequência de condicionamento de índices idx (LongTensor de forma (b,t)) e complete
     a sequência max_new_tokens vezes, alimentando as previsões de volta ao modelo a cada vez.
