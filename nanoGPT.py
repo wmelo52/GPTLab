@@ -205,7 +205,7 @@ class nanoGPTModel(nn.Module):
                 torch.nn.init.normal_(p, mean=0.0, std=0.02/math.sqrt(2 * self.config.n_layer))
 
         # report number of parameters
-        print("number of parameters: %.2fM" % (self.get_num_params()/1e6,))
+        print("number of parameters: %.2fM" % (self.get_num_params(non_embedding=False)/1e6,))
 
 
     def get_num_params(self, non_embedding=True):
